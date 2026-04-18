@@ -1,5 +1,4 @@
 from datetime import date, time, timedelta, datetime
-from typing import Optional, List
 from .users import Employee
 from .violations import Violation
 
@@ -12,7 +11,7 @@ class TimeEntry:
 
     def __init__(self, entry_date: date, 
                  morning_start: time, morning_end: time,
-                 afternoon_start: Optional[time] = None, afternoon_end: Optional[time] = None):
+                 afternoon_start: time | None = None, afternoon_end: time | None = None):
         
         self.date = entry_date
         self.morning_start = morning_start
@@ -63,7 +62,7 @@ class TimeEntry:
             return datetime.combine(date.min, self.afternoon_start) - datetime.combine(date.min, self.morning_end)
         return timedelta()
 
-    def get_daily_violations(self) -> List[Violation]:
+    def get_daily_violations(self) -> list[Violation]:
         """Prüft auf Verletzungen auf Tagesebene (z.B. Pause zu kurz)."""
         violations = []
         work_time = self.calculate_work_hours()
@@ -95,7 +94,7 @@ class Workweek:
         self.employee = employee
         self.calendar_week = calendar_week
         self.year = year
-        self.entries: List[TimeEntry] = []
+        self.entries: list[TimeEntry] = []
 
     def add_entry(self, entry: TimeEntry):
         """Fügt einen neuen Tag zur Woche hinzu."""
@@ -121,7 +120,7 @@ class Workweek:
         """Berechnet die Überstunden (Ist - Soll) als timedelta. Negativ bei Minusstunden."""
         return self.get_total_hours() - self.calculate_target_hours()
 
-    def get_weekly_violations(self) -> List[Violation]:
+    def get_weekly_violations(self) -> list[Violation]:
         """Sammelt tägliche Verstösse und prüft auf wochenbasierte Verstösse."""
         all_violations = []
         
