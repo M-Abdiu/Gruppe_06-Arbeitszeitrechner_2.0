@@ -1,0 +1,67 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.topbar{background:#1A5CB8;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0}
+.topbar-title{color:#fff;font-size:14px;font-weight:500}
+.topbar-user{font-size:12px;color:rgba(255,255,255,.75)}
+.tabs{display:flex;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.tab{padding:10px 20px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent}
+.tab.active{color:#1A5CB8;border-bottom-color:#1A5CB8;font-weight:500}
+.body{background:var(--color-background-primary);padding:1.25rem;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg)}
+.kw-row{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem}
+.kw-row label{font-size:13px;color:var(--color-text-secondary)}
+.kw-box{background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:6px 10px;font-size:13px;color:var(--color-text-primary);width:64px;text-align:center}
+.kw-btn{background:transparent;border:0.5px solid #1A5CB8;color:#1A5CB8;border-radius:var(--border-radius-md);padding:5px 12px;font-size:12px;font-weight:500}
+.grid-head{display:grid;grid-template-columns:90px 1fr 1fr 1fr 1fr;gap:6px;font-size:11px;font-weight:500;color:var(--color-text-tertiary);padding:0 4px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.grid-row{display:grid;grid-template-columns:90px 1fr 1fr 1fr 1fr;gap:6px;align-items:center;padding:5px 4px;border-radius:var(--border-radius-md)}
+.grid-row:nth-child(odd){background:var(--color-background-secondary)}
+.grid-row.weekend{background:#FAEEDA}
+.day-label{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.day-label.we{color:#BA7517}
+.time-cell{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:5px 8px;font-size:12px;color:var(--color-text-secondary);text-align:center}
+.time-cell.filled{color:var(--color-text-primary)}
+.time-cell.empty{color:var(--color-text-tertiary)}
+.sep{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:1rem 0}
+.action-row{display:flex;gap:10px;align-items:center}
+.btn-save{background:#1A5CB8;color:#fff;border:none;border-radius:var(--border-radius-md);padding:8px 20px;font-size:13px;font-weight:500}
+.btn-reset{background:transparent;border:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary);border-radius:var(--border-radius-md);padding:8px 16px;font-size:13px}
+.hint{font-size:11px;color:var(--color-text-tertiary);margin-top:8px}
+</style>
+<div style="padding:1rem 0">
+<p style="font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;text-align:center">Worker — Stunden erfassen</p>
+<div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden">
+  <div class="topbar">
+    <span class="topbar-title">Zeiterfassung | Mein Bereich</span>
+    <span class="topbar-user">Linda Berisha (Worker) &nbsp; Abmelden</span>
+  </div>
+  <div class="tabs">
+    <div class="tab active">Stunden erfassen</div>
+    <div class="tab">Meine Übersicht</div>
+  </div>
+  <div class="body">
+    <div class="kw-row">
+      <label>Kalenderwoche</label>
+      <div class="kw-box">24</div>
+      <label>Jahr</label>
+      <div class="kw-box">2025</div>
+      <button class="kw-btn">Laden</button>
+    </div>
+    <div class="grid-head">
+      <span>Tag</span><span>Morgen Beginn</span><span>Morgen Stop</span><span>Nachmittag Beginn</span><span>Nachmittag Stop</span>
+    </div>
+    <div class="grid-row"><span class="day-label">Montag</span><div class="time-cell filled">07:00</div><div class="time-cell filled">12:00</div><div class="time-cell filled">13:00</div><div class="time-cell filled">17:00</div></div>
+    <div class="grid-row"><span class="day-label">Dienstag</span><div class="time-cell filled">07:30</div><div class="time-cell filled">12:30</div><div class="time-cell filled">13:00</div><div class="time-cell filled">17:30</div></div>
+    <div class="grid-row"><span class="day-label">Mittwoch</span><div class="time-cell filled">06:45</div><div class="time-cell filled">11:45</div><div class="time-cell filled">12:30</div><div class="time-cell filled">16:30</div></div>
+    <div class="grid-row"><span class="day-label">Donnerstag</span><div class="time-cell filled">07:10</div><div class="time-cell filled">12:10</div><div class="time-cell filled">13:00</div><div class="time-cell filled">17:20</div></div>
+    <div class="grid-row"><span class="day-label">Freitag</span><div class="time-cell empty">HH:MM</div><div class="time-cell empty">HH:MM</div><div class="time-cell empty">HH:MM</div><div class="time-cell empty">HH:MM</div></div>
+    <div class="grid-row weekend"><span class="day-label we">Samstag</span><div class="time-cell empty">HH:MM</div><div class="time-cell empty">HH:MM</div><div class="time-cell empty">HH:MM</div><div class="time-cell empty">HH:MM</div></div>
+    <div class="grid-row weekend"><span class="day-label we">Sonntag</span><div class="time-cell empty">HH:MM</div><div class="time-cell empty">HH:MM</div><div class="time-cell empty">HH:MM</div><div class="time-cell empty">HH:MM</div></div>
+    <hr class="sep">
+    <div class="action-row">
+      <button class="btn-save">Speichern</button>
+      <button class="btn-reset">Zurücksetzen</button>
+    </div>
+    <p class="hint">Format: HH:MM (z.B. 08:30) &nbsp;·&nbsp; Leer lassen = kein Eintrag &nbsp;·&nbsp; Wochenende = orange markiert</p>
+  </div>
+</div>
+</div>
