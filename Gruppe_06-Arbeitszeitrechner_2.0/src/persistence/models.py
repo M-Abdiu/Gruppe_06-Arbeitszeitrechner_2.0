@@ -10,6 +10,7 @@ class User(SQLModel, table=True):
     Email: str
     Passwort:  str 
     IsAAdmin: bool
+    Pensum: int = Field(default=100)
     
 
 class Violation (SQLModel, table=True):
@@ -23,6 +24,7 @@ class TimeEntry(SQLModel, table=True):
     pk_TimeEntry_id: int = Field(default=None, primary_key=True)
     fk_user_id: int = Field(default=None, foreign_key="user.pk_user_id")
     Kalenderwoche: int
+    Jahr: int
     Tag: str
     MorgenBeginn: float
     MorgenStop: float
