@@ -1,0 +1,3 @@
+pytest>=7.0
+sqlmodel>=0.0.13
+nicegui>=2.0

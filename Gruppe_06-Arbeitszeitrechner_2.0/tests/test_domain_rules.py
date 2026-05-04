@@ -30,7 +30,7 @@ class TestDomainRules(unittest.TestCase):
     def test_future_date_not_allowed(self):
         future_date = date.today() + timedelta(days=5)
         with self.assertRaises(ValueError) as context:
-            TimeEntry(future_date, time(8, 0), time(12, 0))
+            TimeEntry(future_date, time(8, 0), time(12, 0), reference_date=date.today())
         self.assertTrue("Zukunft erfasst werden" in str(context.exception))
 
     def test_workweek_iso_calendar_edge_case(self):
