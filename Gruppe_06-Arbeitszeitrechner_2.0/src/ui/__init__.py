@@ -524,7 +524,7 @@ def worker_page():
                         ).classes("w-full mt-2 border border-orange-300 rounded-lg"):
                             for v in summ["verletzungen"]:
                                 with ui.row().classes("items-center gap-2 p-2"):
-                                    ui.badge(v.violation_type, color="orange")
+                                    ui.badge(v.type, color="orange")
                                     ui.label(v.message).classes("text-sm text-gray-600")
 
             refresh_overview()
@@ -605,7 +605,7 @@ def admin_page():
 
                         summ = get_weekly_summary(worker, list(entries))
                         begruendung = (
-                            ", ".join(v.violation_type for v in summ["verletzungen"])
+                            ", ".join(v.type for v in summ["verletzungen"])
                             if summ["verletzt"] else "–"
                         )
 
@@ -693,7 +693,7 @@ def admin_page():
                                 with ui.row().classes("items-start gap-3 bg-red-50 rounded p-2"):
                                     ui.icon("warning", color="orange").classes("mt-0.5")
                                     with ui.column().classes("gap-0"):
-                                        ui.label(v.violation_type).classes("font-semibold text-sm text-orange-700")
+                                        ui.label(v.type).classes("font-semibold text-sm text-orange-700")
                                         ui.label(v.message).classes("text-sm text-gray-600")
 
                 if not has_violations:
