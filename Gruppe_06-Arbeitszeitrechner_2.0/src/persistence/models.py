@@ -16,7 +16,7 @@ class User(SQLModel, table=True):
 class Violation (SQLModel, table=True):
     
     pk_violation_id: int = Field(default=None, primary_key=True)
-    fk_TimeEntry_id: int = Field(default=None, foreign_key="TimeEntry.pk_TimeEntry_id")
+    fk_TimeEntry_id: int = Field(default=None, foreign_key="timeentry.pk_TimeEntry_id")
     type: str
     
 class TimeEntry(SQLModel, table=True):

@@ -5,11 +5,12 @@ Starte mit: python -m zeiterfassung  oder  python main.py
 """
 
 from datetime import date, time, timedelta
+from typing import Optional
 
 from nicegui import ui, app
 from sqlmodel import Session, select
 
-from src.data_access.Database import engine
+from src.data_access.Database import engine, create_db_and_tables
 from src.persistence.models import User, TimeEntry, Violation
 from src.domain.users import Employee
 from src.domain.time_tracking import TimeEntry as DomainTimeEntry
@@ -150,10 +151,6 @@ def get_weekly_summary(db_user: User, db_entries: list[TimeEntry]) -> dict:
 def get_session():
     return Session(engine)
 
-def create_db_and_tables():
-    from sqlmodel import SQLModel
-    SQLModel.metadata.create_all(engine)
-
 
 
 # ── Hilfsfunktionen ──────────────────────────────────────────────────────────
@@ -191,7 +188,7 @@ def format_diff(diff: float) -> str:
 
 def get_current_kw() -> tuple[int, int]:
     """Gibt aktuelle Kalenderwoche und Jahr zurück."""
-    today = datetime.date.today()
+    today = date.today()
     return today.isocalendar().week, today.year
 
 
@@ -830,6 +827,31 @@ def admin_page():
 # ══════════════════════════════════════════════════════════════════════════════
 # APP-START
 # ══════════════════════════════════════════════════════════════════════════════
+
+def seed_data():
+    with get_session() as session:
+        if session.exec(select(User)).first() is None:
+            admin = User(
+                username="admin01",
+                Passwort="1234",
+                Vorname="Admin",
+                Nachname="User",
+                Email="admin@example.com",
+                IsAAdmin=True,
+                Pensum=100
+            )
+            worker = User(
+                username="berisha",
+                Passwort="1234",
+                Vorname="Arben",
+                Nachname="Berisha",
+                Email="berisha@example.com",
+                IsAAdmin=False,
+                Pensum=80
+            )
+            session.add(admin)
+            session.add(worker)
+            session.commit()
 
 def main():
     create_db_and_tables()

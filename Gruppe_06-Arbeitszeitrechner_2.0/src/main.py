@@ -1,7 +1,9 @@
-def main():
-    print("Willkommen beim Arbeitszeitrechner 2.0")
-    print("Erfasse Zeiten, berechne Überstunden und prüfe Verstösse.")
-    # Hier wird später NiceGUI gestartet: ui.run()
+import sys
+import os
 
-if __name__ == '__main__':
-    main()
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from src.ui import main as start_ui
+
+if __name__ in {"__main__", "__mp_main__"}:
+    start_ui()
