@@ -29,11 +29,21 @@ def decimal_to_hhmm(decimal_hours: float) -> str:
 def hhmm_to_decimal(time_str: str) -> float:
     if not time_str or time_str.strip() == "":
         return 0.0
+        
+    parts = time_str.split(':')
+    if len(parts) != 2:
+        raise ValueError(f"Ungültiges Format '{time_str}', erwartet HH:MM")
+        
     try:
-        h, m = map(int, time_str.split(':'))
-        return h + m / 60.0
+        h = int(parts[0])
+        m = int(parts[1])
     except ValueError:
         raise ValueError(f"Ungültiges Format '{time_str}', erwartet HH:MM")
+        
+    if h > 23 or m > 59 or h < 0 or m < 0:
+        raise ValueError(f"Ungültige Zeit '{time_str}'")
+        
+    return h + m / 60.0
 
 def decimal_to_time(decimal_hours: float) -> time:
     if not decimal_hours:
