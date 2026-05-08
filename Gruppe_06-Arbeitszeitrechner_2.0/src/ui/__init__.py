@@ -33,7 +33,7 @@ def hhmm_to_decimal(time_str: str) -> float:
         h, m = map(int, time_str.split(':'))
         return h + m / 60.0
     except ValueError:
-        return 0.0
+        raise ValueError(f"Ungültiges Format '{time_str}', erwartet HH:MM")
 
 def decimal_to_time(decimal_hours: float) -> time:
     if not decimal_hours:
@@ -307,6 +307,37 @@ def worker_page():
 
     def save_entries():
         """Speichert alle Formularfelder als Zeiteinträge in der DB."""
+        # Validation via Domain Logic (DomainTimeEntry constructor validates times)
+        invalid_days = []
+        for tag in WOCHENTAGE + WOCHENENDE:
+            if tag not in time_fields:
+                continue
+            tf = time_fields[tag]
+            try:
+                mb = hhmm_to_decimal(tf["mb"].value)
+                ms = hhmm_to_decimal(tf["ms"].value)
+                nb = hhmm_to_decimal(tf["nb"].value)
+                ns = hhmm_to_decimal(tf["ns"].value)
+
+                if mb == 0.0 and ms == 0.0 and nb == 0.0 and ns == 0.0:
+                    continue
+
+                # Check validity using domain rules
+                # We use date.today() as a placeholder just to trigger the internal _validate_times
+                DomainTimeEntry(
+                    entry_date=date.today(),
+                    morning_start=decimal_to_time(mb) or time(0, 0),
+                    morning_end=decimal_to_time(ms) or time(0, 0),
+                    afternoon_start=decimal_to_time(nb),
+                    afternoon_end=decimal_to_time(ns)
+                )
+            except ValueError as e:
+                invalid_days.append(f"{tag} ({str(e)})")
+
+        if invalid_days:
+            ui.notify(f"❌ Ungültige Zeiteingabe: {', '.join(invalid_days)}", type="negative")
+            return
+
         with Session(engine) as session:
             saved_count = 0
             for tag in WOCHENTAGE + WOCHENENDE:
@@ -785,7 +816,13 @@ def admin_page():
                     n_email = ui.input("E-Mail").props("outlined dense")
                     n_pensum = ui.number("Pensum %", value=100, min=10, max=100).props("outlined dense")
 
-                n_is_admin = ui.checkbox("Admin-Rolle").classes("mt-2")
+                def toggle_pensum(e):
+                    if e.value:
+                        n_pensum.disable()
+                    else:
+                        n_pensum.enable()
+
+                n_is_admin = ui.checkbox("Admin-Rolle", on_change=toggle_pensum).classes("mt-2")
 
                 def create_user():
                     if not n_username.value or not n_passwort.value or not n_vorname.value or not n_nachname.value:
@@ -807,7 +844,7 @@ def admin_page():
                             Email=n_email.value.strip(),
                             Passwort=n_passwort.value,
                             IsAAdmin=n_is_admin.value,
-                            Pensum=int(n_pensum.value or 100),
+                            Pensum=0 if n_is_admin.value else int(n_pensum.value or 100),
                         )
                         session.add(new_user)
                         session.commit()
