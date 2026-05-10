@@ -90,7 +90,7 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 
 ### Use cases
 
-Use Case Diagramm.png
+![Use Case Diagramm](docs/architecture-diagrams/Use%20Case%20Diagramm.png)
 
 ## Main Use Cases
 
@@ -132,24 +132,21 @@ Use Case Diagramm.png
 ![UML Class Diagram](docs/architecture-diagrams/uml_class_architecture.png)
 
 **Layers / components:**
-- UI (NiceGUI pages/components, browser as thin client)
-- Application logic (controllers + domain/services)
-- Persistence (SQLite + ORM entities + repositories/queries)
+- UI (Presentation Layer): Wir nutzen NiceGUI für das Frontend. Der Browser dient hier als reiner "Thin Client". Er zeigt die Daten nur an und schickt Eingaben ans Backend.
+- Service Schicht (Application Logic): Der `TimeTrackingService` ist der zentrale Punkt. Er nimmt die Anfragen der UI entgegen und delegiert sie an die Logik weiter.
+- Domain (Kern Logik): Hier liegen die wichtigen Klassen wie `Employee` oder `Workweek`. Alles, was mit der Berechnung von Stunden oder dem Prüfen von Regeln zu tun hat, passiert hier.
+- Persistence (Daten): Wir nutzen SQLModel als ORM. Damit speichern wir die Daten sauber in der SQLite Datenbank (`company.db`), ohne manuellen SQL Code schreiben zu müssen.
 
 **Design decisions (examples):**
-- Organize code using **MVC**:
-   - **Model:** domain + ORM entities (e.g. `models.py`)
-   - **View:** NiceGUI UI components/pages
-   - **Controller:** event handlers and coordination logic between UI, services, and persistence
-- Separate UI (`app/main.py`) from domain logic (e.g. `pricing.py`) and persistence (e.g. `models.py`, `db.py`)
-- Use and interaction of modules to minimize dependencies, by minimizing cohesion and maximizing coupling
-- Keep business rules testable without starting the UI
+- Saubere Trennung: Wir haben darauf geachtet, dass die UI keine Business Logik enthält. Die UI ruft lediglich Funktionen wie `add_work_day()` auf. Die Logik für die Gültigkeit von Zeitstempeln oder Pausenregeln liegt allein in der Domain Schicht.
+- Adapter in der UI: Funktionen wie `get_weekly_summary` im UI-Modul dienen nur dazu, die Daten aus der Datenbank für den Service passend umzubauen. Das hält den Rest der App sauber und testbar.
+- Validierung: Wir trennen strikt zwischen zwei Arten von Prüfungen. Die UI prüft, ob das Format (zum Beispiel HH:MM) stimmt. Die fachliche Prüfung (zum Beispiel ob die Endzeit nach der Startzeit liegt) übernimmt die Business Logik.
 
 **Design patterns used (examples):**
-- MVC (Model–View–Controller)
-- Repository/DAO for database access (e.g. `queries.py`)
-- Strategy for business rules (e.g. discount calculation)
-- Adapter for external services (e.g. invoice generation backend)
+- Schichtenarchitektur / MVC: Jedes Element hat einen festen Platz (Anzeige, Logik oder Datenbank).
+- Repository Pattern: Die Datenhaltung ist vom Rest der App entkoppelt.
+- Strategy Pattern: Die Arbeitszeitregeln sind so gekapselt, dass man sie bei Bedarf leicht austauschen oder erweitern kann.
+- Facade Pattern: Der Service bietet der UI eine einfache Schnittstelle für die komplexen Abläufe im Hintergrund.
 
 ---
 
@@ -176,29 +173,45 @@ Each app must meet the following criteria in order to be accepted (see also the 
 
 ### 1. Browser-based App (NiceGUI)
 
-> 🚧 In this section, document how your project fulfills each criterion.
+Die gesamte Interaktion mit der Zeiterfassung findet über den Browser statt. Wir setzen dabei konsequent auf NiceGUI, um ein reaktives Web-Interface zu bieten.
 
-The application interacts with the user via the browser. Users can:
+**Kern-Funktionen der App:**
+- Zentrales Login: Eine Einstiegsmaske validiert die Nutzerdaten und leitet Mitarbeitende oder Admins automatisch in ihren jeweiligen Bereich weiter.
+- Mitarbeiter Portal: Hier können Arbeitszeiten tabellarisch für zwei Zeitblöcke pro Tag erfasst werden. Die Ansicht lässt sich nach Kalenderwochen und Jahren filtern.
+- Persönliche Auswertung: Mitarbeitende sehen eine Übersicht mit Soll- und Ist-Stunden sowie der berechneten Differenz. Verstösse gegen Arbeitsregeln werden in einem einklappbaren Bereich (Accordion) direkt angezeigt.
+- Admin Dashboard: Vorgesetzte erhalten eine globale Übersicht über alle Teammitglieder. Sie sehen sofort den Status der aktuellen Woche sowie detaillierte Listen über Regelüberschreitungen wie missachtete Pausenzeiten.
 
-- View the pizza menu
-- Select pizzas and quantities
-- See the running total
-- Receive an invoice generated as a file
-
-**Architecture note (per SS26 guidelines):** the browser is a thin client; UI state + business logic live on the server-side NiceGUI app.
+**Architektur Hinweis:**
+Der Browser agiert als Thin Client. Das bedeutet, dass die gesamte Logik für die Berechnungen und die Verwaltung der Oberflächen-Zustände auf dem Server innerhalb der NiceGUI Applikation läuft.
 
 ---
 
 ### 2. Data Validation
 
-The application validates all user input to ensure data integrity and a smooth user experience.
-These checks prevent crashes and guide the user to provide correct input, matching the validation requirements described in the project guidelines.
+Die Anwendung prüft Eingaben auf mehreren Ebenen, um die Datenintegrität sicherzustellen und Fehlermeldungen verständlich auszugeben.
+
+**Validierung in der UI Schicht:**
+In der Datei `src/ui/__init__.py` stellen wir sicher, dass nur korrekte Formate verarbeitet werden. Die Funktion `hhmm_to_decimal` prüft zum Beispiel, ob Zeitangaben im Format HH:MM vorliegen und ob die Werte für Stunden und Minuten innerhalb der logischen Grenzen liegen. Auch die Login Felder werden hier auf Vollständigkeit geprüft.
+
+**Fachliche Validierung in der Domain Schicht:**
+Innerhalb der `TimeEntry` Klasse in `src/domain/time_tracking.py` findet die logische Prüfung statt. Hier wird unter anderem sichergestellt, dass Endzeiten niemals vor den Startzeiten liegen. Zudem verhindern wir Buchungen in der Zukunft und prüfen, ob Nachmittagsblöcke überschneidungsfrei zum Morgenblock eingetragen wurden.
+
+**Regelbasierte Validierung:**
+Durch spezielle Strategy Klassen wie `BreakTimeRule` oder `MaxDailyWorkRule` prüfen wir im Hintergrund automatisch, ob gesetzliche oder vertragliche Rahmenbedingungen verletzt wurden. Dies umfasst die Einhaltung von Mindestpausen sowie die Einhaltung der maximal zulässigen Tages- und Wochenarbeitszeit.
+
 
 ---
 
 ### 3. Database Management
 
-All relevant data is managed via an ORM (e.g. SQLModel or SQLAlchemy). For the pizza example this includes users, pizzas, and orders.
+Für die Verwaltung der Daten nutzen wir SQLModel als modernem Object Relational Mapper (ORM). Die Definitionen befinden sich in `src/persistence/models.py`.
+
+**Datenmodell und Relationen:**
+- User Modell: Speichert alle Informationen zu den Mitarbeitenden inklusive ihrer Rollen (Admin oder Worker) und des jeweiligen Beschäftigungsgrads für die Sollzeit Berechnung.
+- TimeEntry Modell: Dieser Teil bildet die täglichen Arbeitsstempel ab. Über den Fremdschlüssel `fk_user_id` ist jeder Eintrag fest mit einem Benutzer verknüpft. Die Zeiten werden zur besseren Berechenbarkeit als Float Werte gespeichert.
+- Violation Modell: Hier werden spezifische Regelverstösse dokumentiert. Dieses Modell ist über den Fremdschlüssel `fk_TimeEntry_id` direkt mit dem entsprechenden Arbeitstag verknüpft, an dem der Fehler aufgetreten ist.
+
+Durch den Einsatz von SQLModel können wir komplexe Abfragen und Verknüpfungen direkt in Python schreiben, was den Code wartbar und sicher gegen SQL Injektionen macht.
 
 ---
 
@@ -271,7 +284,6 @@ pizza-app/
 
 ### How to Run
 
-> 🚧 Adjust to your project.
 
 ### 1. Project Setup
 - Python 3.13 (or the course version) is required
@@ -292,59 +304,72 @@ pizza-app/
    ```
 
 ### 2. Configuration
-- E.g., setup of parameters or environment variables
+Die Applikation nutzt eine lokale SQLite Datenbank (`company.db`). Es ist keine zusätzliche Konfiguration von Umgebungsvariablen oder `.env` Dateien notwendig. Die Datenbank wird beim ersten Start automatisch initialisiert.
 
 ### 3. Launch
-- Start the NiceGUI app (example):
-   ```bash
-   py -m pizza_app
-   ```
-- Open the URL printed in the console.
+Starte die NiceGUI App mit dem folgenden Befehl:
+```bash
+python -m src.main
+```
+Die Applikation öffnet sich daraufhin automatisch in deinem Standardbrowser unter `http://localhost:8080/`. Falls dies nicht geschieht, klicke auf den Link in der Konsole.
 
-### 4. Usage (document as steps)
 
-> 🚧 Describe the usage of the main functions
+### 4. Usage (Step-by-Step)
+Nach dem Start der Anwendung können sich Mitarbeitende und Admins mit ihren jeweiligen Zugangsdaten anmelden. Die Anwendung bietet spezifische Funktionen für zwei Nutzerrollen:
 
-Order Pizza:
-1. Open the menu page and browse pizzas.
-2. Add items (with quantities) to the current order.
-3. Review total (incl. discounts) and validate inputs.
-4. Checkout to persist the order and generate the invoice.
+**Als Worker (Mitarbeiter):**
+-   **Login Daten:** Benutzername: `berisha`, Passwort: `1234`
+-   Logge dich ein und navigiere zum Bereich **Stunden erfassen**.
+-   Wähle die gewünschte Kalenderwoche sowie das Jahr aus.
+-   Trage deine Arbeitszeiten für den Vormittags- und Nachmittagsblock im Format `HH:MM` ein und klicke auf Speichern.
+-   Kontrolliere im Tab **Meine Übersicht** deine berechneten Ist-Stunden, die Differenz zur Soll-Zeit sowie mögliche Hinweise auf Regelverstöße.
 
-> 🚧 Add UI screenshots of the main screens (or a short video link):
 
-![UI – Checkout](docs/ui-images/ui_checkout_screen.png)
-![UI – Past Transactions](docs/ui-images/ui_past_transactions_screen.png)
+**Als Admin:**
+-   **Login Daten:** Benutzername: `admin01`, Passwort: `1234`
+-   **Team Kontrolle:** Überprüfe in der zentralen **Übersicht** die geleisteten Soll- und Ist-Stunden des gesamten Teams.
+-   **Verstösse prüfen:** Wechsle in den Tab **Verstösse**, um gezielt einzusehen, welche Mitarbeitenden gegen gesetzliche Vorgaben wie Pausenregeln oder Maximalarbeitszeit verstoßen haben.
+-   **Benutzerverwaltung:** Nutze diesen Bereich, um die Personalien der Mitarbeitenden einzusehen, Beschäftigungsgrade (Pensen) zu verwalten oder bei Bedarf Accounts aus dem System zu entfernen.
+
 
 ---
 
 ## 🧪 Testing
 
-> 🚧 Explain what you test and how to run tests.
+Wir setzen auf eine strikte Testabdeckung unserer Kernkomponenten (Domain-Logik), um sicherzustellen, dass gesetzliche Regeln und Berechnungen verlässlich funktionieren. Wir nutzen dafür eine Kombination aus `unittest` und `pytest`.
 
 **Test mix:**
-- Overall 12 tests
-- 6 Unit tests: e.g. subtotal calculation, discount application above CHF 50, no discount at or below threshold, total calculation
-- 3 DB tests: e.g. menu query returns seeded pizzas, saving an order persists order + order items, empty DB / empty transactions behavior
-- 3 Integration tests: e.g. checkout with one pizza creates order and invoice, checkout with multiple pizzas applies discount correctly
+Insgesamt wurden **16 automatisierte Tests** als Unit-Tests in drei verschiedenen Testfiles (Suites) definiert:
 
-**Template for writing test cases**
-1. Test case ID – unique identifier (e.g., TC_001)
-2. Test case title/description – What is the test about?
-3. Preconditions: Requirements before executing the test
-4. Test steps: Actions to perform
-5. Test data/input
-6. Expected result
-7. Actual result
-8. Status – pass or fail
-9. Comments – Additional notes or defect found
+- **`test_time_tracking.py` (8 pytest Unit-Tests):**  
+  Prüft alle logischen Randfälle beim Erfassen von Arbeitszeiten. Zum Beispiel:  
+  - Chronologieprüfung (Start- muss vor Endzeit liegen).  
+  - Unvollständige Nachmittagsblöcke.  
+  - Abfangen von Versuchen, Stunden in der Zukunft zu erfassen.  
+  - Prüfung der Strategie-Verstöße (Fehlende Pausen oder >14h Tagesarbeitszeit).
+  
+- **`test_domain_rules.py` (5 unittest Unit-Tests):**  
+  Tiefere Prüfung der Regeln und Edge-Cases, z.B. ISO-Kalenderwechsel-Hürden und Limit-Prüfungen. Das Abfangen von ungültigen Beschäftigungsgraden (z.B. Negativwerte) wird hier ebenfalls sichergestellt.
+
+- **`test_users.py` (3 unittest Unit-Tests):**  
+  Prüft die abstrakte Vererbung der User-Klasse, testet benutzerdefinierte IDs und überprüft mathematisch die proportionale Wochen-Soll-Berechnung basierend auf dem Pensum.
+
+**Dokumentierter Beispiel-Testfall:**
+1. **Test case ID:** TC_001
+2. **Test case title/description:** Prüfung der maximalen Tagesarbeitszeitregel
+3. **Preconditions:** Domain-Modelle `TimeEntry` und `MaxDailyWorkRule` müssen existieren.
+4. **Test steps:** Erstelle einen Zeiteintrag mit 15 Stunden Arbeitszeit und validiere diesen mit der `MaxDailyWorkRule`.
+5. **Test data/input:** Start 08:00 - 12:00 Uhr, und 12:10 - 23:10 Uhr (Total 15h).
+6. **Expected result:** Es wird ein Verstoß (`Violation`) gemeldet.
+7. **Actual result:** Die `Violation` "Maximalarbeitszeit" wird korrekt generiert.
+8. **Status:** Pass
+9. **Comments:** Als Unit-Test `test_max_daily_work_rule_violation` automatisiert umgesetzt.
 
 **Run:**
+Die Tests können simpel via Konsole ausgeführt werden:
 ```bash
-pytest
+pytest tests/
 ```
-
-> 🚧 If you provide separate commands, document them here (e.g. `pytest -m integration`).
 
 ---
 
