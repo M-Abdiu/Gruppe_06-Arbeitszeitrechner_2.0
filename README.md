@@ -44,19 +44,19 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 
 ## User Stories
 
-### 1. Worker: Login
+### 1. Employee: Login
 **Als User möchte ich, mich einloggen und meine Module sehen basierend auf meiner Berechtigung**
 **Description:**
 **Inputs:** none  
 **Outputs:**
 
-### 2. Worker: Hour Logging
+### 2. Employee: Hour Logging
 **Als User möchte ich, mich einloggen und meine Arbeitsstunden eintragen für eine Kalenderwoche**
 **Description:**
 **Inputs:** none  
 **Outputs:**
 
-### 3. Worker: Hour Overview
+### 3. Employee: Hour Overview
 **Als User möchte ich, mich einloggen und meine individuelle Arbeitsstundenauszüge sehen**
 **Description:**
 **Inputs:** none  
@@ -90,23 +90,26 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 
 ### Use cases
 
-> 🚧 Name actors and briefly describe each use case. Ideally, a UML use case diagram specifies use cases and relationships.
+Use Case Diagramm.png
 
-![UML Use Case Diagram](docs/architecture-diagrams/uml_use_case_diagram.png)
-
-**Use cases**
 ## Main Use Cases
 
-- Startseite (Worker, Admin)  
-- individueller Stundenauszug (Worker)  
-  - neuer Wocheneintrag (Worker) 
-- Stundenauszugübersicht (Admin)  
-- Verletzungsübersicht (Admin)    
-- User Management (Admin)  
+1. Arbeitszeiten eintragen
+2. Arbeitszeiten ändern
+3. Eigene Arbeitszeitübersicht anzeigen
+4. Arbeitszeiten der Worker überprüfen
+5. Regelverletzungen anzeigen und überprüfen
+6. Benutzer anlegen
+7. Benutzer löschen
+
+### Technical Use Cases
+
+1. Login
+2. Logout
 
 **Actors**
-- Worker (Zeiterfassung,individueller Stundenauszug)
-- Admin (Stundenauszug pro Mitarbeiter überprüfen, Arbeitsvertragsverletzungsüberscht überprüfen, Neue Mitarbeiter erfassen oder entfernen )
+- Employee:   ist ein normaler Benutzer der Anwendung. Er kann eigene Arbeitszeiten erfassen, ändern und seine persönliche Übersicht einsehen.
+- Admin:    verwaltet die Benutzer und überprüft die erfassten Arbeitszeiten der Worker. Zusätzlich kann der Admin Regelverletzungen einsehen und kontrollieren.
 
 ---
 
