@@ -44,53 +44,70 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 
 ## User Stories
 
-### 1. Employee: Login
-**Als User möchte ich, mich einloggen und meine Module sehen basierend auf meiner Berechtigung**
-**Description:**
-**Inputs:** none  
-**Outputs:**
+### 1. Worker: Login
+**Als Worker möchte ich, mich einloggen und meine Module sehen basierend auf meiner Berechtigung**
 
-### 2. Employee: Hour Logging
-**Als User möchte ich, mich einloggen und meine Arbeitsstunden eintragen für eine Kalenderwoche**
-**Description:**
-**Inputs:** none  
-**Outputs:**
+**Inputs:** Login(Email,Password) 
+**Outputs:** none
 
-### 3. Employee: Hour Overview
-**Als User möchte ich, mich einloggen und meine individuelle Arbeitsstundenauszüge sehen**
-**Description:**
-**Inputs:** none  
-**Outputs:**
+### 2. Worker: Stundeneintrag
+**Als Worker möchte ich, mich einloggen und meine Arbeitsstunden eintragen für eine Kalenderwoche**
 
-### 1. Admin: Login
+**Inputs:** ?list([entry])  
+**Outputs:** ?list([entry])  
+
+### 3. Worker: Stundenübersicht
+**Als Worker möchte ich, mich einloggen und meine individuelle Arbeitsstundenauszüge sehen pro Kalenderjahr und möchte eine detaillierten Auschnitt sehen (Soll-Ist Zeit, Diferenz usw.)**
+
+**Inputs:** none  
+**Outputs:** list([entry]) "where UserID matches"
+
+### 4. Worker: Stundenanpassung
+**Als Worker möchte ich, mich einloggen und meine Arbeitsstunden der jetzigen Kalenderwoche modifizieren**
+
+**Inputs:** ?list([entry])  
+**Outputs:** ?list([entry])
+
+### 5. Worker: Logout
+**Als Worker möchte ich, mich ausloggen können.**
+
+**Inputs:** logout()
+**Outputs:** none
+
+### 6. Admin: Login
 **Als Admin möchte ich, mich einloggen und meine Module sehen basierend auf meiner Berechtigung**
-**Description:**
-**Inputs:** none  
+
+**Inputs:** Login(Email,Password) 
 **Outputs:**
 
-### 2. Admin:View Admin Worktime Menu
-**Als Admin möchte ich, eine Übersicht der Soll-Zeit, Differenz-Zeit,Pensums jedes einzelnen Mitarbeiters erhalten.**
-**Description:**
-**Inputs:** none  
-**Outputs:**
+### 7. Admin: Stundenübersicht
+**Als Admin möchte ich, eine Übersicht der Soll-Zeit, Differenz-Zeit,Pensums jedes einzelnen Mitarbeiters erhalten, der bereits Einträge erstellt hat.**
 
-### 3. Admin: View Violations Menu
+**Inputs:** none  
+**Outputs:**  list([entry]) "All UserID"
+
+### 8. Admin: View Violations Menu
 **Als Admin möchte ich, eine Angabe erhalten ob die vertraglichen Rahmenbedingungen eingehalten wurden und gegebenenfalls eine Angabe erhalten welche Rahmenbedingung verletzt wurde pro Mitarbeiter.**
-**Description:**
-**Inputs:** none  
-**Outputs:**
 
-### 4. Admin: User Managment Menu 
+**Inputs:** none  
+**Outputs:** list([violations]) "All UserID"
+
+### 9. Admin: User Managment Menu 
 **Als Admin möchte ich,neue Mitarbeiter erfassen oder entfernen.**
-**Description:**
-**Inputs:** none  
-**Outputs:**
 
+**Inputs:** createUser(Name,Pensum,Email,Passwort)  
+**Outputs:** newUser
+
+### 10. Admin: Logout
+**Als Admin möchte ich, mich ausloggen können.**
+
+**Inputs:** logout()
+**Outputs:** none
 ---
 
 ### Use cases
 
-![Use Case Diagramm](docs/architecture-diagrams/Use%20Case%20Diagramm.png)
+![Use Case Diagramm](Use%20Case%20Diagramm.png)
 
 ## Main Use Cases
 
@@ -108,7 +125,7 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 2. Logout
 
 **Actors**
-- Employee:   ist ein normaler Benutzer der Anwendung. Er kann eigene Arbeitszeiten erfassen, ändern und seine persönliche Übersicht einsehen.
+- Worker:   ist ein normaler Benutzer der Anwendung. Er kann eigene Arbeitszeiten erfassen, ändern und seine persönliche Übersicht einsehen.
 - Admin:    verwaltet die Benutzer und überprüft die erfassten Arbeitszeiten der Worker. Zusätzlich kann der Admin Regelverletzungen einsehen und kontrollieren.
 
 ---
@@ -117,8 +134,20 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 
 > 🚧 Add screenshots of the wireframe mockups you chose to implement.
 
-![Wireframes – Home/Transactions](docs/ui-images/wireframes.png)
+**Start:**
+![Login](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\LoginMockUp.png)
 
+**Admin Bereich:**
+![Admin View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\AdminView_MockUp.png)
+![Admin User View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\AdminUsermanagment_MockUp.png)
+![Admin Violation View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\AdminViolation_MockUp.png)
+
+
+**Worker Bereich:**
+![Worker Timeentry View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\WorkerTimenetryView_MockUp.png)
+![Worker Timeentry Overview](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\WorkerTimenentryOverview_MockUp.png)
+
+**Created with Balasmiq, free trial version**
 ---
 
 ## 🏛️ Architecture
@@ -134,7 +163,7 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 **Layers / components:**
 - UI (Presentation Layer): Wir nutzen NiceGUI für das Frontend. Der Browser dient hier als reiner "Thin Client". Er zeigt die Daten nur an und schickt Eingaben ans Backend.
 - Service Schicht (Application Logic): Der `TimeTrackingService` ist der zentrale Punkt. Er nimmt die Anfragen der UI entgegen und delegiert sie an die Logik weiter.
-- Domain (Kern Logik): Hier liegen die wichtigen Klassen wie `Employee` oder `Workweek`. Alles, was mit der Berechnung von Stunden oder dem Prüfen von Regeln zu tun hat, passiert hier.
+- Domain (Kern Logik): Hier liegen die wichtigen Klassen wie `Worker` oder `Workweek`. Alles, was mit der Berechnung von Stunden oder dem Prüfen von Regeln zu tun hat, passiert hier.
 - Persistence (Daten): Wir nutzen SQLModel als ORM. Damit speichern wir die Daten sauber in der SQLite Datenbank (`company.db`), ohne manuellen SQL Code schreiben zu müssen.
 
 **Design decisions (examples):**
@@ -152,11 +181,18 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 
 ### 🗄️ Database and ORM
 
-> 🚧 Describe the database and your ORM entities. Ideally, a diagram documents the database and it is described together with the ORM entities.
+![ER Diagram](Gruppe_06-Arbeitszeitrechner_2.0/docs/architecture-diagrams/ER_Diagram_.png)
 
-![ER Diagram](docs/architecture-diagrams/er_diagram.png)
+**Entities**
+User: Represents a person using the app
+TimeEntry: One work-timesheet row
+Violation: A rule violation tied to a time entry
 
-**ORM and Entities (example):** In the database, order are stored in ... that are mapped an `Order` entity. The `Order` ↔ `OrderItem` relationship ... ensures that an `Order` has at least one `OrderItem` and an `OrderItem` always relates to an `Order`.
+**Relationships**
+One User → many TimeEntry.
+Each TimeEntry references one User
+One TimeEntry → zero or many Violation.
+Each Violation references one TimeEntry
 
 ---
 
@@ -230,54 +266,46 @@ Durch den Einsatz von SQLModel können wir komplexe Abfragen und Verknüpfungen 
 ### 📂 Repository Structure
 
 ```text
-pizza-app/
+Workspace root/
+├─ .github/
+├─ .nicegui/
+├─ company.db
 ├─ README.md
-├─ pyproject.toml
-├─ .env.example
-├─ .gitignore
-│
-├─ pizza_app/
-│  ├─ __main__.py               # entrypoint (py -m pizza_app)
-│  ├─ application.py            # composition root
-│  │
-│  ├─ domain/
-│  │  └─ models.py
-│  │
-│  ├─ infra/
-│  │  ├─ db.py
-│  │  ├─ repositories.py
-│  │  └─ seed.py
-│  │
-│  ├─ services/
-│  │  ├─ pricing.py
-│  │  └─ invoice.py
-│  │
-│  ├─ ui/
-│  │  ├─ pages.py
-│  │  └─ controllers.py
-│
-├─ docs/
-│  ├─ ui-images/
-│  │  ├─ ui_showcase.png
-│  │  ├─ ui_menu.png
-│  │  ├─ ui_checkout.png
-│  │  ├─ wireframe_home.png
-│  │  └─ wireframe_checkout.png
-│  │
-│  └─ architecture-diagrams/
-│     ├─ uml_use_case_diagram.png
-│     ├─ uml_class_architecture.png
-│     ├─ uml_class_domain.png
-│     ├─ uml_class_persistence.png
-│     └─ er_diagram.png
-│
-├─ data/                        # sqlite DB (gitignored)
-├─ invoices/                    # generated PDFs (gitignored)
-│
-└─ tests/
-   ├─ conftest.py
-   ├─ test_pricing.py
-   └─ test_checkout_and_invoice.py
+├─ requirements.txt
+└─ Gruppe_06-Arbeitszeitrechner_2.0/
+   ├─ docs/
+   │  └─ architecture-diagrams/
+   │     └─ ER_Diagram_.png
+   ├─ src/
+   │  ├─ controller/
+   │  ├─ data_access/
+   │  │  └─ Database.py
+   │  ├─ domain/
+   │  │  ├─ __init__.py
+   │  │  ├─ config.py
+   │  │  ├─ services.py
+   │  │  ├─ time_tracking.py
+   │  │  ├─ users.py
+   │  │  └─ violations.py
+   │  ├─ persistence/
+   │  │  ├─ __init__.py
+   │  │  ├─ models.py
+   │  │  ├─ mappers/
+   │  │  │  ├─ __init__.py
+   │  │  │  ├─ employee_mapper.py
+   │  │  │  └─ time_entry_mapper.py
+   │  │  └─ repositories/
+   │  │     ├─ __init__.py
+   │  │     ├─ employee_repository.py
+   │  │     └─ time_entry_repository.py
+   │  ├─ ui/
+   │  │  └─ __init__.py
+   │  ├─ example_usage.py
+   │  └─ main.py
+   └─ tests/
+      ├─ test_domain_rules.py
+      ├─ test_time_tracking.py
+      └─ test_users.py
 ```
 
 ---
