@@ -134,8 +134,20 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 
 > 🚧 Add screenshots of the wireframe mockups you chose to implement.
 
-![Wireframes – Home/Transactions](docs/ui-images/wireframes.png)
+**Start:**
+![Login](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\LoginMockUp.png)
 
+**Admin Bereich:**
+![Admin View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\AdminView_MockUp.png)
+![Admin User View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\AdminUsermanagment_MockUp.png)
+![Admin Violation View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\AdminViolation_MockUp.png)
+
+
+**Worker Bereich:**
+![Worker Timeentry View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\WorkerTimenetryView_MockUp.png)
+![Worker Timeentry Overview](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\WorkerTimenentryOverview_MockUp.png)
+
+**Created with Balasmiq, free trial version**
 ---
 
 ## 🏛️ Architecture
