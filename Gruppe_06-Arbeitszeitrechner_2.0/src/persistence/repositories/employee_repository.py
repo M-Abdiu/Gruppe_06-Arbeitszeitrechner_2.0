@@ -25,9 +25,9 @@ class EmployeeRepository:
     
     def find_by_id(self, employee_id: int) -> Optional[Employee]:
         """Lädt einen Employee anhand der ID."""
-        db_user = self.session.query(DBUser)\
-            .filter(DBUser.pk_user_id == employee_id)\
-            .first()
+        db_user = self.session.exec(
+            select(DBUser).filter(DBUser.pk_user_id == employee_id)
+        ).first()
         if not db_user:
             return None
         
@@ -50,23 +50,23 @@ class EmployeeRepository:
     
     def find_by_email(self, email: str) -> Optional[Employee]:
         """Lädt einen Employee anhand der Email."""
-        db_user = self.session.query(DBUser)\
-            .filter(DBUser.Email == email)\
-            .first()
+        db_user = self.session.exec(
+            select(DBUser).filter(DBUser.Email == email)
+        ).first()
         return EmployeeMapper.to_domain(db_user) if db_user else None
     
     def find_all_employees(self) -> List[Employee]:
         """Lädt alle Mitarbeiter (Employees, nicht Admins)."""
-        db_users = self.session.query(DBUser)\
-            .filter(DBUser.IsAAdmin == False)\
-            .all()
+        db_users = self.session.exec(
+            select(DBUser).filter(DBUser.IsAAdmin == False)
+        ).all()
         return [EmployeeMapper.to_domain(db_user) for db_user in db_users]
     
     def delete(self, employee_id: int) -> bool:
         """Löscht einen Employee."""
-        db_user = self.session.query(DBUser)\
-            .filter(DBUser.pk_user_id == employee_id)\
-            .first()
+        db_user = self.session.exec(
+            select(DBUser).filter(DBUser.pk_user_id == employee_id)
+        ).first()
         if db_user:
             self.session.delete(db_user)
             self.session.commit()

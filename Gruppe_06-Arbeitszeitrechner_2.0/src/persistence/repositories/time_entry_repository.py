@@ -4,7 +4,7 @@ Bildet eine Abstrakts-Schicht zwischen Domain und Database.
 """
 from datetime import date
 from typing import Optional, List
-from sqlmodel import Session
+from sqlmodel import Session, select
 from src.domain.time_tracking import TimeEntry
 from src.persistence.models import TimeEntry as DBTimeEntry
 from src.persistence.mappers import TimeEntryMapper
@@ -34,19 +34,21 @@ class TimeEntryRepository:
     
     def find_by_date(self, employee_id: int, entry_date: date) -> Optional[TimeEntry]:
         """Lädt einen TimeEntry für ein bestimmtes Datum."""
-        db_entry = self.session.query(DBTimeEntry)\
-            .filter(DBTimeEntry.fk_user_id == employee_id)\
-            .filter(DBTimeEntry.Tag == entry_date.isoformat())\
-            .first()
+        db_entry = self.session.exec(
+            select(DBTimeEntry)
+            .filter(DBTimeEntry.fk_user_id == employee_id)
+            .filter(DBTimeEntry.Tag == entry_date.isoformat())
+        ).first()
         return TimeEntryMapper.to_domain(db_entry) if db_entry else None
     
     def find_entries_for_week(self, employee_id: int, year: int, calendar_week: int) -> List[TimeEntry]:
         """Lädt alle TimeEntries einer Woche für einen Mitarbeiter."""
-        db_entries = self.session.query(DBTimeEntry)\
-            .filter(DBTimeEntry.fk_user_id == employee_id)\
-            .filter(DBTimeEntry.Jahr == year)\
-            .filter(DBTimeEntry.Kalenderwoche == calendar_week)\
-            .all()
+        db_entries = self.session.exec(
+            select(DBTimeEntry)
+            .filter(DBTimeEntry.fk_user_id == employee_id)
+            .filter(DBTimeEntry.Jahr == year)
+            .filter(DBTimeEntry.Kalenderwoche == calendar_week)
+        ).all()
         return [TimeEntryMapper.to_domain(db_entry) for db_entry in db_entries]
     
     def delete(self, employee_id: int, entry_date: date) -> bool:

@@ -277,7 +277,6 @@ Workspace root/
    │  └─ architecture-diagrams/
    │     └─ ER_Diagram_.png
    ├─ src/
-   │  ├─ controller/
    │  ├─ data_access/
    │  │  └─ Database.py
    │  ├─ domain/
@@ -300,12 +299,12 @@ Workspace root/
    │  │     └─ time_entry_repository.py
    │  ├─ ui/
    │  │  └─ __init__.py
-   │  ├─ example_usage.py
    │  └─ main.py
    └─ tests/
-      ├─ test_domain_rules.py
-      ├─ test_time_tracking.py
-      └─ test_users.py
+      ├─ conftest.py
+      ├─ test_db.py
+      ├─ test_integration.py
+      └─ test_time_tracking.py
 ```
 
 ---
@@ -364,40 +363,166 @@ Nach dem Start der Anwendung können sich Mitarbeitende und Admins mit ihren jew
 
 ## 🧪 Testing
 
-Wir setzen auf eine strikte Testabdeckung unserer Kernkomponenten (Domain-Logik), um sicherzustellen, dass gesetzliche Regeln und Berechnungen verlässlich funktionieren. Wir nutzen dafür eine Kombination aus `unittest` und `pytest`.
 
-**Test mix:**
-Insgesamt wurden **16 automatisierte Tests** als Unit-Tests in drei verschiedenen Testfiles (Suites) definiert:
+**Tests ausführen:**
+Wir nutzen `pytest` als unser Testing Framework. Wenn du Probleme hast, die Tests auszuführen (z.B. `ModuleNotFoundError: No module named 'src'`), liegt das am fehlenden Python-Pfad (`PYTHONPATH`). 
 
-- **`test_time_tracking.py` (8 pytest Unit-Tests):**  
-  Prüft alle logischen Randfälle beim Erfassen von Arbeitszeiten. Zum Beispiel:  
-  - Chronologieprüfung (Start- muss vor Endzeit liegen).  
-  - Unvollständige Nachmittagsblöcke.  
-  - Abfangen von Versuchen, Stunden in der Zukunft zu erfassen.  
-  - Prüfung der Strategie-Verstöße (Fehlende Pausen oder >14h Tagesarbeitszeit).
-  
-- **`test_domain_rules.py` (5 unittest Unit-Tests):**  
-  Tiefere Prüfung der Regeln und Edge-Cases, z.B. ISO-Kalenderwechsel-Hürden und Limit-Prüfungen. Das Abfangen von ungültigen Beschäftigungsgraden (z.B. Negativwerte) wird hier ebenfalls sichergestellt.
+Um die Tests in **PowerShell** auf Windows erfolgreich auszuführen, kopiere diese zwei Zeilen nacheinander in dein Terminal (stelle sicher, dass du dich im ersten Hauptordner befindest):
 
-- **`test_users.py` (3 unittest Unit-Tests):**  
-  Prüft die abstrakte Vererbung der User-Klasse, testet benutzerdefinierte IDs und überprüft mathematisch die proportionale Wochen-Soll-Berechnung basierend auf dem Pensum.
-
-**Dokumentierter Beispiel-Testfall:**
-1. **Test case ID:** TC_001
-2. **Test case title/description:** Prüfung der maximalen Tagesarbeitszeitregel
-3. **Preconditions:** Domain-Modelle `TimeEntry` und `MaxDailyWorkRule` müssen existieren.
-4. **Test steps:** Erstelle einen Zeiteintrag mit 15 Stunden Arbeitszeit und validiere diesen mit der `MaxDailyWorkRule`.
-5. **Test data/input:** Start 08:00 - 12:00 Uhr, und 12:10 - 23:10 Uhr (Total 15h).
-6. **Expected result:** Es wird ein Verstoß (`Violation`) gemeldet.
-7. **Actual result:** Die `Violation` "Maximalarbeitszeit" wird korrekt generiert.
-8. **Status:** Pass
-9. **Comments:** Als Unit-Test `test_max_daily_work_rule_violation` automatisiert umgesetzt.
-
-**Run:**
-Die Tests können simpel via Konsole ausgeführt werden:
-```bash
-pytest tests/
+```powershell
+cd "Gruppe_06-Arbeitszeitrechner_2.0"
+$env:PYTHONPATH="."; python -m pytest tests/
 ```
+
+**Test-Zusammenstellung:**
+- Insgesamt 12 Tests
+- 6 Unit-Tests: Startzeit vor Endzeit, Daten in der Zukunft, unvollständige Nachmittagsblöcke, Pausenregeln, maximale Arbeitszeit pro Tag, Begrenzungen beim Beschäftigungsgrad (Pensum).
+- 3 DB-Tests: Employee Speicherung und ID-Abruf, TimeEntry Persistenz inkl. Fremdschlüssel, abfragen von Wocheneinträgen via Repository.
+- 3 Integration-Tests: Validierung von Arbeitstagen ohne Verstoss, Erkennen von Überstunden über das Service Facade, Berechnen und Abrufen wöchentlicher Auswertungen über die DB und Geschäftslogik.
+
+### Dokumentierte Testfälle
+
+1. **Test case ID:** TC_001
+2. **Test case title/description:** Unit-Test: Endzeit vor Startzeit (Invalid time order)
+3. **Preconditions:** Domain-Modell `TimeEntry` involviert.
+4. **Test steps:** Erstelle ein `TimeEntry` bei dem eine Endzeit vor der dazu passenden Startzeit liegt.
+5. **Test data/input:** Morgen Start: 12:00 Uhr, Morgen Ende: 08:00 Uhr.
+6. **Expected result:** Das Modell fängt die logische Unstimmigkeit ab und wirft einen `ValueError`.
+7. **Actual result:** Ein `ValueError` mit entsprechendem Text wird geworfen.
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_invalid_time_order`.
+
+---
+
+1. **Test case ID:** TC_002
+2. **Test case title/description:** Unit-Test: Zeitstempel in der Zukunft abweisen
+3. **Preconditions:** Domain-Modell `TimeEntry` involviert.
+4. **Test steps:** Versuche einen Tag in der Zukunft (bezogen auf das `reference_date`) anzulegen.
+5. **Test data/input:** Arbeitsdatum: 2026-04-20, Referenzdatum: 2026-04-19.
+6. **Expected result:** Es sind keine Stempelungen in der Zukunft erlaubt (`ValueError`).
+7. **Actual result:** `ValueError` wird mit korrektem Match abgefangen.
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_future_date_rejected`.
+
+---
+
+1. **Test case ID:** TC_003
+2. **Test case title/description:** Unit-Test: Unvollständiger Nachmittagsblock
+3. **Preconditions:** Domain-Modell `TimeEntry` involviert.
+4. **Test steps:** Eine Startzeit für den Nachmittag übergeben, aber keine Endzeit angeben.
+5. **Test data/input:** Morgen: 08:00-12:00, Nachmittag Start: 13:00, Ende: None.
+6. **Expected result:** `ValueError`, da ein Block komplett gefüllt sein muss.
+7. **Actual result:** Korrekte Exception wird aufgrund fehlendem Paar getriggert.
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_incomplete_afternoon_block`.
+
+---
+
+1. **Test case ID:** TC_004
+2. **Test case title/description:** Unit-Test: Pausenregelung-Verstoss
+3. **Preconditions:** `BreakTimeRule` und `TimeEntry` instanziert.
+4. **Test steps:** Ein Arbeitstag über 5.5 Stunden am Stück (ohne Pause) wird durch die Rule (`check`) geprüft.
+5. **Test data/input:** Arbeitszeit von 08:00 bis 14:00 Uhr (6 Stunden).
+6. **Expected result:** Die Regel identifiziert fehlende Pause und meldet eine Violation zurück.
+7. **Actual result:** Liste mit 1 Violation des Typs "Pausenregelung" wird generiert.
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_break_time_rule_violation`.
+
+---
+
+1. **Test case ID:** TC_005
+2. **Test case title/description:** Unit-Test: Maximalarbeitszeit-Verstoss
+3. **Preconditions:** `MaxDailyWorkRule` und `TimeEntry` instanziert.
+4. **Test steps:** Prüfe einen Eintrag, bei der über 14 Stunden gearbeitet wurde.
+5. **Test data/input:** Morgen: 08:00-12:00 (4h), Nachmittag: 12:10-23:10 (11h), Total=15h.
+6. **Expected result:** Violation aufgrund der Begrenzung wird ausgelöst.
+7. **Actual result:** Exakt 1 Violation des Typs "Maximalarbeitszeit" wird gemeldet.
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_max_daily_work_rule_violation`.
+
+---
+
+1. **Test case ID:** TC_006
+2. **Test case title/description:** Unit-Test: Beschäftigungsgrad Grenzen validieren
+3. **Preconditions:** Modell `Employee` involviert.
+4. **Test steps:** Instanziierung eines Mitarbeiters mit ungültigen Werten beim Pensum.
+5. **Test data/input:** Test 1: -10.0%, Test 2: 150.0%
+6. **Expected result:** Das Domain-Modell weist beide ungültigen Pense via `ValueError` ab.
+7. **Actual result:** `ValueError`s werden bei Instanziierungsversuch geworfen.
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_employee_validates_employment_percentage`.
+
+---
+
+1. **Test case ID:** TC_007
+2. **Test case title/description:** DB-Test: Employee speichern und laden
+3. **Preconditions:** In-memory SQLite Datenbank über `conftest.py` Fixture.
+4. **Test steps:** Nutze das `EmployeeRepository`, speichere ein neues `Employee` Profil und lese es mit der neu generierten ID neu ein.
+5. **Test data/input:** `Employee(John Doe, john@test.ch, Pensum=80%)`
+6. **Expected result:** Geladenes Profil ist identisch mit dem Eingabe-Profil.
+7. **Actual result:** ID wurde aus DB vergeben und per Query korrekt rekonstruiert.
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_employee_repository_saves_and_retrieves`.
+
+---
+
+1. **Test case ID:** TC_008
+2. **Test case title/description:** DB-Test: TimeEntry Speichern mit Fremdschlüssel
+3. **Preconditions:** Seeded Database enthält bereits mindestens einen Mitarbeiter.
+4. **Test steps:** Speichere die Arbeitszeit über `TimeEntryRepository` mit Fremdschlüssel-ID 1 ab.
+5. **Test data/input:** `TimeEntry(2026-04-20, 08:00-12:00, 13:00-17:00)` für Employee=1.
+6. **Expected result:** Persistierungs-Vorgang erfolgreich, erneutes Laden durch Suchparameter (Datum) gibt exakt dieses `TimeEntry` aus.
+7. **Actual result:** Objekt wurde an Mitarbeiter gelinkt gebunden gespeichert.
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_time_entry_repository_saves_and_retrieves`.
+
+---
+
+1. **Test case ID:** TC_009
+2. **Test case title/description:** DB-Test: TimeEntry nach Woche abfragen
+3. **Preconditions:** Seeded Database, `TimeEntryRepository` bereit.
+4. **Test steps:** Setze 3 unterschiedliche Einträge ab (zwei in der gleichen, einer in einer anderen Wochhe). Frage danach eine spezifische Woche via Repo-Methode ab.
+5. **Test data/input:** Kalenderwochen-Speicherung: Woche 17 (2 Einträge), Woche 21 (1 Eintrag). Query: Woche 17.
+6. **Expected result:** Exakt die abgefragte Teilliste (Länge 2) wird gemappt zurückgegeben.
+7. **Actual result:** Query filtert erfolgreich (`len(week_entries) == 2`).
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_time_entry_repository_finds_entries_for_week`.
+
+---
+
+1. **Test case ID:** TC_010
+2. **Test case title/description:** Integration-Test: Valid Day Entry ohne Verstösse
+3. **Preconditions:** Orchestrierung über `TimeTrackingService` mit verbundener Repository-Mockstruktur.
+4. **Test steps:** Via `add_work_day` einen korrekten Tag speichern und prüfen, ob die Repository-Komponente erfolgreich aufgerufen wird ohne Violations zu triggern.
+5. **Test data/input:** 08:00 - 12:00 Uhr am Montag.
+6. **Expected result:** Eintrag wird persistiert, keine Violations vom Service generiert.
+7. **Actual result:** Eintrag `id is not None`, `len(violations) == 0`.
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_integration_add_valid_work_day_saves_entry`.
+
+---
+
+1. **Test case ID:** TC_011
+2. **Test case title/description:** Integration-Test: Valid Day Entry mit Überstunden-Trigger
+3. **Preconditions:** Orchestrierung über `TimeTrackingService` mit verbundener Repository-Mockstruktur.
+4. **Test steps:** Ein Arbeitsblock, der zu Pausenzeiten-Violations führt anlegen.
+5. **Test data/input:** 08:00 - 14:30 Uhr durchgehender Arbeitsblock (6.5h).
+6. **Expected result:** Der Service speichert den Eintrag in die DB und delegiert Violations durch die integrierten Checks an das Return-Object.
+7. **Actual result:** Eintrag wird angelegt, aber Service reicht 1 Violation "Pausenregelung" durch.
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_integration_add_work_day_with_overtime_triggers_violation`.
+
+---
+
+1. **Test case ID:** TC_012
+2. **Test case title/description:** Integration-Test: Evaluate Week Summary Abfrage
+3. **Preconditions:** Orchestrierung über `TimeTrackingService`.
+4. **Test steps:** Speichern mehrerer Tage als Vorbereitung, anschließend Abfrage der summarischen Wochendaten via `get_employee_weekly_summary`.
+5. **Test data/input:** Montag (4h) & Dienstag (2h) hinzugefügt. Wochen-Metrik wird abgeholt.
+6. **Expected result:** Im Dictionary stehen korrekte Gesamtstunden inkl. der 2 registrierten Einzel-Zeilen.
+7. **Actual result:** `total_hours == 6.0`, `len(entries) == 2` sowie kalkulierte negative Overtime für Teil-Woche.
+8. **Status:** Pass
+9. **Comments:** Implementiert als `test_integration_evaluate_week_summary`.
 
 ---
 
@@ -409,13 +534,12 @@ pytest tests/
 
 ---
 
-> 🚧 Fill in the names of all team members and describe their individual contributions below.
 
-| Name      | Contribution |
-|-----------|--------------|
-| Student A | NiceGUI UI + documentation |
-| Student B | Database & ORM + documentation |
-| Student C | Business logic + documentation |
+| Name            | Contribution                      |
+|-----------------|-----------------------------------|
+| Arti Rechi      | NiceGUI UI + documentation        |
+| Denis Meira     | Database & ORM + documentation    |
+| Mehmedali Abdiu | Business logic + documentation    |
 
 ---
 
