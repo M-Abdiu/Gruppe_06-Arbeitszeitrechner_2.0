@@ -551,9 +551,15 @@ $env:PYTHONPATH="."; python -m pytest tests/
 
 ---
 
-### Libraries Used
+### 📚 Libraries Used
 
-nicegui, sqlmodel, sqlalchemy, reportlab, python-dotenv, pytest, tzdata
+- **nicegui** – UI framework  
+- **sqlmodel** – ORM  
+- **sqlalchemy** – database toolkit  
+- **reportlab** – PDF generation  
+- **python-dotenv** – configuration  
+- **pytest** – testing  
+- **pytest-cov** – coverage 
 
 ## 👥 Team & Contributions
 
