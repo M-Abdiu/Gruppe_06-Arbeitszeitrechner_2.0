@@ -273,7 +273,7 @@ Die Zeiten werden im Datenbankmodell als Float-Werte abgelegt und in den Mappern
 ### Technology
 
 - Python 3.x
-- Environment: GitHub Codespaces
+- Environment: Lokale Entwicklung (VS Code)
 - External libraries: nicegui, sqlmodel, sqlalchemy, reportlab, python-dotenv, pytest, tzdata
 
 ---
@@ -329,20 +329,23 @@ Workspace root/
 ### How to Run
 
 
-### 1. Project Setup
-- Python 3.13 (or the course version) is required
-- Create and activate a virtual environment:
-   - **macOS/Linux:**
-      ```bash
-      python3 -m venv .venv
-      source .venv/bin/activate
-      ```
+### 1. Project Setup (Lokale Umgebung)
+Da in diesem Projekt kein Devcontainer genutzt wird, muss die Applikation direkt auf deinem lokalen PC eingerichtet werden.
+
+1. **Voraussetzung:** Python 3.13 (oder die Kursversion) muss installiert sein.
+2. **Ordner öffnen:** Öffne den Projektordner in VS Code.
+3. **Virtuelle Umgebung erstellen:** Öffne ein Terminal (`Ctrl` + `ö` oder `Terminal -> New Terminal`) und führe aus:
    - **Windows:**
       ```bash
       python -m venv .venv
       .venv\Scripts\Activate
       ```
-- Install dependencies:
+   - **macOS/Linux:**
+      ```bash
+      python3 -m venv .venv
+      source .venv/bin/activate
+      ```
+4. **Abhängigkeiten installieren:** Sobald die virtuelle Umgebung aktiv ist (erkennbar am `(.venv)` ganz links im Terminal), installiere die Pakete:
    ```bash
    pip install -r requirements.txt
    ```
@@ -351,10 +354,15 @@ Workspace root/
 Die Applikation nutzt eine lokale SQLite Datenbank (`company.db`). Es ist keine zusätzliche Konfiguration von Umgebungsvariablen oder `.env` Dateien notwendig. Die Datenbank wird beim ersten Start automatisch initialisiert.
 
 ### 3. Launch
-Starte die NiceGUI App mit dem folgenden Befehl:
+Um die Applikation einfach und direkt zu starten, wechsle in den Projektordner (falls nicht bereits geschehen) und führe die `main.py` direkt aus:
 ```bash
-python -m src.main
+cd Gruppe_06-Arbeitszeitrechner_2.0
+python src/main.py
 ```
+
+**Alternative zur Konsole:**
+Öffne einfach die Datei `src/main.py` in deiner IDE (z. B. VS Code) und klicke oben rechts auf den **Play**-Button ("Run Python File").
+
 Die Applikation öffnet sich daraufhin automatisch in deinem Standardbrowser unter `http://localhost:8080/`. Falls dies nicht geschieht, klicke auf den Link in der Konsole.
 
 
@@ -545,7 +553,7 @@ $env:PYTHONPATH="."; python -m pytest tests/
 
 ### Libraries Used
 
-- see above
+nicegui, sqlmodel, sqlalchemy, reportlab, python-dotenv, pytest, tzdata
 
 ## 👥 Team & Contributions
 
