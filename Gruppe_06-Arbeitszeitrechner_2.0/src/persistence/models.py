@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 from sqlmodel import Field, SQLModel
 
@@ -18,6 +19,8 @@ class Violation (SQLModel, table=True):
     pk_violation_id: int = Field(default=None, primary_key=True)
     fk_TimeEntry_id: int = Field(default=None, foreign_key="timeentry.pk_TimeEntry_id")
     type: str
+    message: str
+    violation_date: Optional[date] = None
     
 class TimeEntry(SQLModel, table=True):
     

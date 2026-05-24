@@ -12,6 +12,7 @@ from sqlmodel import Session, select
 
 from src.data_access.Database import engine, create_db_and_tables
 from src.persistence.models import User, TimeEntry, Violation
+from src.persistence.repositories import ViolationRepository
 from src.domain.users import Employee
 from src.domain.time_tracking import TimeEntry as DomainTimeEntry
 from src.domain.services import TimeTrackingService
@@ -348,6 +349,8 @@ def worker_page():
             ui.notify(f"❌ Ungültige Zeiteingabe: {', '.join(invalid_days)}", type="negative")
             return
 
+        pending_violations: list[tuple[int, list]] = []
+
         with Session(engine) as session:
             saved_count = 0
             for tag in WOCHENTAGE + WOCHENENDE:
@@ -371,6 +374,7 @@ def worker_page():
                         )
                     ).first()
                     if existing:
+                        pending_violations.append((existing.pk_TimeEntry_id, []))
                         session.delete(existing)
                     continue
 
@@ -389,6 +393,7 @@ def worker_page():
                     existing.NachmittagBeginn = nb
                     existing.NachmittagStop = ns
                     session.add(existing)
+                    db_entry = existing
                 else:
                     new_entry = TimeEntry(
                         fk_user_id=user_id,
@@ -401,9 +406,36 @@ def worker_page():
                         NachmittagStop=ns,
                     )
                     session.add(new_entry)
+                    db_entry = new_entry
+
+                session.flush()
+
+                entry_date = date.fromisocalendar(
+                    selected_kw["year"],
+                    selected_kw["kw"],
+                    (WOCHENTAGE + WOCHENENDE).index(tag) + 1,
+                )
+                domain_entry = DomainTimeEntry(
+                    entry_date=entry_date,
+                    morning_start=decimal_to_time(mb) or time(0, 0),
+                    morning_end=decimal_to_time(ms) or time(0, 0),
+                    afternoon_start=decimal_to_time(nb),
+                    afternoon_end=decimal_to_time(ns),
+                )
+                pending_violations.append((db_entry.pk_TimeEntry_id, domain_entry.get_daily_violations()))
                 saved_count += 1
 
             session.commit()
+
+        if pending_violations:
+            with Session(engine) as violation_session:
+                violation_repo = ViolationRepository(violation_session)
+                for time_entry_id, violations in pending_violations:
+                    try:
+                        violation_repo.delete_by_time_entry_id(time_entry_id)
+                        violation_repo.save_many(violations, time_entry_id=time_entry_id)
+                    except Exception:
+                        violation_session.rollback()
 
         ui.notify(f"✅ {saved_count} Einträge für KW {selected_kw['kw']}/{selected_kw['year']} gespeichert.", type="positive")
         load_entries_to_form()

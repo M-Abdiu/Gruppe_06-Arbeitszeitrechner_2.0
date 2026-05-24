@@ -1,9 +1,14 @@
 import pytest
 from datetime import date, time
+from sqlmodel import SQLModel, create_engine, Session
+
+from src.data_access import Database
 from src.persistence.repositories.employee_repository import EmployeeRepository
 from src.persistence.repositories.time_entry_repository import TimeEntryRepository
+from src.persistence.repositories.violation_repository import ViolationRepository
 from src.domain.users import Employee
 from src.domain.time_tracking import TimeEntry
+from src.domain.violations import Violation
 
 def test_employee_repository_saves_and_retrieves(db):
     """DB-Test 1: Employee wird gespeichert und erfolgreich geladen."""
@@ -50,3 +55,56 @@ def test_time_entry_repository_finds_entries_for_week(seeded_db):
     
     # Assert only the two entries in week 17 are retrieved
     assert len(week_entries) == 2
+
+
+def test_violation_repository_saves_and_retrieves(seeded_db):
+    """DB-Test 4: Violation wird mit TimeEntry-Bezug gespeichert und geladen."""
+    time_entry_repo = TimeEntryRepository(seeded_db)
+    violation_repo = ViolationRepository(seeded_db)
+
+    entry = TimeEntry(date(2026, 4, 20), time(8, 0), time(12, 0))
+    saved_entry = time_entry_repo.save(entry, employee_id=1, calendar_week=17, year=2026)
+
+    violation = Violation(
+        type="Pausenregelung",
+        message="Es wurde keine ausreichende Pause gemacht.",
+        date=date(2026, 4, 20),
+    )
+
+    saved_violation = violation_repo.save(violation, time_entry_id=int(saved_entry.id))
+
+    assert saved_violation.type == "Pausenregelung"
+    assert saved_violation.message == "Es wurde keine ausreichende Pause gemacht."
+    assert saved_violation.date == date(2026, 4, 20)
+
+    loaded_violations = violation_repo.find_by_time_entry_id(int(saved_entry.id))
+    assert len(loaded_violations) == 1
+    assert loaded_violations[0].type == "Pausenregelung"
+
+
+def test_create_db_and_tables_migrates_legacy_violation_table(tmp_path, monkeypatch):
+    """Die DB-Initialisierung ergänzt fehlende Violation-Spalten in alten SQLite-Dateien."""
+    legacy_db_path = tmp_path / "legacy_company.db"
+    test_engine = create_engine(f"sqlite:///{legacy_db_path}")
+
+    with test_engine.begin() as connection:
+        connection.exec_driver_sql(
+            """
+            CREATE TABLE violation (
+                pk_violation_id INTEGER PRIMARY KEY,
+                fk_TimeEntry_id INTEGER,
+                type TEXT
+            )
+            """
+        )
+
+    monkeypatch.setattr(Database, "engine", test_engine)
+
+    Database.create_db_and_tables()
+
+    with test_engine.connect() as connection:
+        columns = connection.exec_driver_sql("PRAGMA table_info(violation)").all()
+        column_names = {column[1] for column in columns}
+
+    assert "message" in column_names
+    assert "violation_date" in column_names
