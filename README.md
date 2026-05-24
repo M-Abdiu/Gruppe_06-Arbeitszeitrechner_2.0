@@ -1,6 +1,6 @@
 # Arbeitszeit-Auswertungs Programm
 
-![UI Showcase](Gruppe_06-Arbeitszeitrechner_2.0/docs/ui_showcase.png)
+![UI Showcase](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/ui_showcase.png)
 
 ---
 
