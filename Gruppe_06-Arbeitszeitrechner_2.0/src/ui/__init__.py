@@ -597,7 +597,8 @@ def worker_page():
                         ).classes("w-full mt-2 border border-orange-300 rounded-lg"):
                             for v in summ["verletzungen"]:
                                 with ui.row().classes("items-center gap-2 p-2"):
-                                    ui.badge(v.type, color="orange")
+                                    date_info = f" ({v.date.strftime('%d.%m.%Y')})" if getattr(v, 'date', None) else ""
+                                    ui.badge(f"{v.type}{date_info}", color="orange")
                                     ui.label(v.message).classes("text-sm text-gray-600")
 
             refresh_overview()
@@ -766,7 +767,8 @@ def admin_page():
                                 with ui.row().classes("items-start gap-3 bg-red-50 rounded p-2"):
                                     ui.icon("warning", color="orange").classes("mt-0.5")
                                     with ui.column().classes("gap-0"):
-                                        ui.label(v.type).classes("font-semibold text-sm text-orange-700")
+                                        date_info = f" vom {v.date.strftime('%d.%m.%Y')}" if getattr(v, 'date', None) else ""
+                                        ui.label(f"{v.type}{date_info}").classes("font-semibold text-sm text-orange-700")
                                         ui.label(v.message).classes("text-sm text-gray-600")
 
                 if not has_violations:
