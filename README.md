@@ -1,6 +1,6 @@
 # Arbeitszeit-Auswertungs Programm
 
-![UI Showcase](Gruppe_06-Arbeitszeitrechner_2.0\docs\ui_showcase.png)
+![UI Showcase](Gruppe_06-Arbeitszeitrechner_2.0/docs/ui_showcase.png)
 
 ---
 
@@ -119,7 +119,8 @@ Der Mitarbeiter soll eine detaillierte Ansicht seiner Stundenauszüge pro Kalend
 
 ### Use cases
 
-![Use Case Diagramm](Gruppe_06-Arbeitszeitrechner_2.0\docs\architecture-diagrams\Use Case Diagramm.png)
+![Use Case Diagramm](Gruppe_06-Arbeitszeitrechner_2.0/docs/architecture-diagrams/Use%20Case%20Diagramm.png)
+
 ## Main Use Cases
 
 1. Arbeitszeiten eintragen
@@ -143,20 +144,19 @@ Der Mitarbeiter soll eine detaillierte Ansicht seiner Stundenauszüge pro Kalend
 
 ### Wireframes / Mockups
 
-> 🚧 Add screenshots of the wireframe mockups you chose to implement.
 
 **Start:**
-![Login](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\LoginMockUp.png)
+![Login](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/LoginMockUp.png)
 
 **Admin Bereich:**
-![Admin View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\AdminView_MockUp.png)
-![Admin User View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\AdminUsermanagment_MockUp.png)
-![Admin Violation View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\AdminViolation_MockUp.png)
+![Admin View](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/AdminView_MockUp.png)
+![Admin User View](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/AdminUsermanagment_MockUp.png)
+![Admin Violation View](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/AdminViolation_MockUp.png)
 
 
 **Worker Bereich:**
-![Worker Timeentry View](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\WorkerTimenetryView_MockUp.png)
-![Worker Timeentry Overview](Gruppe_06-Arbeitszeitrechner_2.0\docs\MockUp's\WorkerTimenentryOverview_MockUp.png)
+![Worker Timeentry View](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/WorkerTimenetryView_MockUp.png)
+![Worker Timeentry Overview](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/WorkerTimenentryOverview_MockUp.png)
 
 **Created with Balasmiq, free trial version**
 ---
@@ -167,7 +167,7 @@ Der Mitarbeiter soll eine detaillierte Ansicht seiner Stundenauszüge pro Kalend
 ### Software Architecture
 
 
-![UML Class Diagram](Gruppe_06-Arbeitszeitrechner_2.0\docs\architecture-diagrams\uml_class_architecture.png)
+![UML Class Diagram](Gruppe_06-Arbeitszeitrechner_2.0/docs/architecture-diagrams/uml_class_architecture.png)
 
 **Layers / components:**
 - UI (Presentation Layer): Wir nutzen NiceGUI für das Frontend. Der Browser dient hier als reiner "Thin Client". Er zeigt die Daten nur an und schickt Eingaben ans Backend.
@@ -190,7 +190,7 @@ Der Mitarbeiter soll eine detaillierte Ansicht seiner Stundenauszüge pro Kalend
 
 ### 🗄️ Database and ORM
 
-![ER Diagram](Gruppe_06-Arbeitszeitrechner_2.0\docs\architecture-diagrams\ER_Diagram_.png)
+![ER Diagram](Gruppe_06-Arbeitszeitrechner_2.0/docs/architecture-diagrams/ER_Diagram_.png)
 
 **Entities**
 User: Represents a person using the app
