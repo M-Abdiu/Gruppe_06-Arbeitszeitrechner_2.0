@@ -164,11 +164,9 @@ Der Mitarbeiter soll eine detaillierte Ansicht seiner Stundenauszüge pro Kalend
 
 ## 🏛️ Architecture
 
-> 🚧 Document the architecture components, relationships, and key design decisions.
 
 ### Software Architecture
 
-> 🚧 Insert your UML class diagram(s). Split into multiple diagrams if needed.
 
 ![UML Class Diagram](Gruppe_06-Arbeitszeitrechner_2.0\docs\architecture-diagrams\uml_class_architecture.png)
 
