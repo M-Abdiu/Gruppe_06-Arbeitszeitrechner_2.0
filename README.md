@@ -146,19 +146,21 @@ Der Mitarbeiter soll eine detaillierte Ansicht seiner Stundenauszüge pro Kalend
 
 
 **Start:**
+
 ![Login](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/LoginMockUp.png)
 
 **Admin Bereich:**
+
 ![Admin View](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/AdminView_MockUp.png)
 ![Admin User View](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/AdminUsermanagment_MockUp.png)
 ![Admin Violation View](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/AdminViolation_MockUp.png)
 
 
 **Worker Bereich:**
+
 ![Worker Timeentry View](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/WorkerTimenetryView_MockUp.png)
 ![Worker Timeentry Overview](Gruppe_06-Arbeitszeitrechner_2.0/docs/MockUp's/WorkerTimenentryOverview_MockUp.png)
 
-**Created with Balasmiq, free trial version**
 ---
 
 ## 🏛️ Architecture
