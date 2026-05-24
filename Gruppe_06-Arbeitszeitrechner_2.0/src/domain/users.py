@@ -19,7 +19,6 @@ class User(ABC):
 
 class Employee(User):
     """Mitarbeitender mit Pensum und Sollzeiten-Berechnung."""
-    BASE_WEEKLY_HOURS: float = 42.0  # Konstante Basis-Arbeitszeit bei 100%
 
     def __init__(self, first_name: str, last_name: str, email: str, employment_percentage: float, entity_id: Optional[str] = None) -> None:
         super().__init__(first_name, last_name, email, user_role="Employee", entity_id=entity_id)
@@ -29,7 +28,8 @@ class Employee(User):
 
     def get_weekly_target_hours(self) -> float:
         """Berechnet die individuelle Sollzeit anhand des Pensums."""
-        return (self.BASE_WEEKLY_HOURS / 100.0) * self.employment_percentage
+        from .config import WorkRulesConfig
+        return (WorkRulesConfig.BASE_WEEKLY_HOURS / 100.0) * self.employment_percentage
 
     def has_admin_privileges(self) -> bool:
         """Mitarbeiter haben keine Admin-Rechte."""

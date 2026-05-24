@@ -11,9 +11,9 @@ class WorkRulesConfig:
     # Basis-Arbeitszeitrahmen
     BASE_WEEKLY_HOURS = 42.0  # Vollzeitangestellte arbeiten 42h/Woche
     
-    # Pausenregelung (Schweizer Gesetz)
+    # Pausenregelung (Fix)
     MAX_HOURS_WITHOUT_BREAK = timedelta(hours=5, minutes=30)  # Nach 5.5h ohne Pause muss Pausen-Regelung greifen
-    MIN_BREAK_HOURS = timedelta(minutes=15)  # Mindestens 15min Pause erforderlich
+    MIN_BREAK_HOURS = timedelta(minutes=15)  # Mindestens 15min Pause erforderlich, fixiert.
     
     # Tagesarbeitszeit-Grenze
     MAX_DAILY_HOURS = timedelta(hours=14)  # Niemand darf mehr als 14h/Tag arbeiten

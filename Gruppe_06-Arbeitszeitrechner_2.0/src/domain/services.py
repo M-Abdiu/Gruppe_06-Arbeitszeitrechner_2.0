@@ -81,7 +81,8 @@ class TimeTrackingService:
         
         # Auch alle täglichen Verstösse sammeln
         for entry in entries:
-            violations.extend(entry.get_daily_violations())
+            for rule in self.daily_rules:
+                violations.extend(rule.check(entry))
             
         return week, violations
 

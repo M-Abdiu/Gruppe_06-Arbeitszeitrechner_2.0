@@ -25,7 +25,7 @@ class TimeEntry:
         self._validate_times(reference_date)
 
     def _validate_times(self, reference_date: Optional[date]) -> None:
-        """Stellt sicher, dass die Zeiten chronologisch korrekt und vollständig sind."""
+        """Stellt sicher, dass die Zeiten chronologisch korrekt und vollständig sind (reine Tagarbeit)."""
         if reference_date and self.date > reference_date:
             raise ValueError("Fachlicher Fehler: Es können keine Arbeitszeiten für die Zukunft erfasst werden.")
 
@@ -33,7 +33,7 @@ class TimeEntry:
             return datetime.combine(date.min, t)
 
         if get_dt(self.morning_end) <= get_dt(self.morning_start):
-            raise ValueError("Morgen-Endzeit muss nach der Morgen-Startzeit liegen.")
+            raise ValueError("Morgen-Endzeit muss nach der Morgen-Startzeit liegen (Nachtschicht ist nicht erlaubt).")
 
         # Wenn ein Nachmittag eingetragen ist, müssen Start UND Ende existieren
         if (self.afternoon_start and not self.afternoon_end) or (not self.afternoon_start and self.afternoon_end):
@@ -43,7 +43,7 @@ class TimeEntry:
             if get_dt(self.afternoon_start) < get_dt(self.morning_end):
                  raise ValueError("Nachmittags-Startzeit darf nicht vor Morgen-Endzeit liegen.")
             if get_dt(self.afternoon_end) <= get_dt(self.afternoon_start):
-                 raise ValueError("Nachmittags-Endzeit muss nach der Nachmittags-Startzeit liegen.")
+                 raise ValueError("Nachmittags-Endzeit muss nach der Nachmittags-Startzeit liegen (Nachtschicht ist nicht erlaubt).")
 
     def calculate_work_hours(self) -> timedelta:
         """Berechnet die reine Netto-Arbeitszeit dieses Tages."""
@@ -64,15 +64,6 @@ class TimeEntry:
             return datetime.combine(date.min, self.afternoon_start) - datetime.combine(date.min, self.morning_end)
         return timedelta()
 
-    def get_daily_violations(self) -> List[Violation]:
-        """Prüft alle täglichen Regeln und gibt Verstösse zurück."""
-        violations: List[Violation] = []
-        daily_rules = [BreakTimeRule(), MaxDailyWorkRule()]
-        for rule in daily_rules:
-            violations.extend(rule.check(self))
-        return violations
-
-
 class Workweek:
     """Aggregiert Zeiteinträge einer Woche und berechnet Überstunden/Wochensolls."""
     
@@ -85,9 +76,9 @@ class Workweek:
 
     def add_entry(self, entry: TimeEntry) -> None:
         """Fügt einen neuen Tag zur Woche hinzu."""
-        entry_year, entry_week, _ = entry.date.isocalendar()
-        if entry_year != self.year or entry_week != self.calendar_week:
-            raise ValueError(f"Eintragdatum {entry.date} passt nicht zu KW {self.calendar_week}/{self.year}.")
+        iso_year, iso_week, _ = entry.date.isocalendar()
+        if iso_year != self.year or iso_week != self.calendar_week:
+            raise ValueError(f"Eintragdatum {entry.date} (ISO: KW {iso_week}/{iso_year}) passt nicht zu KW {self.calendar_week}/{self.year}.")
             
         if any(e.date == entry.date for e in self.entries):
             raise ValueError(f"Ein Eintrag für das Datum {entry.date} existiert bereits in dieser Woche.")
@@ -107,18 +98,6 @@ class Workweek:
         """Berechnet die Überstunden (Ist - Soll) als timedelta. Negativ bei Minusstunden."""
         return self.get_total_hours() - self.calculate_target_hours()
 
-    def get_weekly_violations(self) -> List[Violation]:
-        """Prüft alle Verstösse der Woche (wöchentlich + tägliche Verstösse in der Woche)."""
-        violations: List[Violation] = []
-        # Wöchentliche Regel
-        weekly_rules = [MaxWeeklyWorkRule()]
-        for rule in weekly_rules:
-            violations.extend(rule.check(self))
-        # Tägliche Verstösse aller Einträge
-        for entry in self.entries:
-            violations.extend(entry.get_daily_violations())
-        return violations
-        
     def __repr__(self) -> str:
         return f"<Workweek KW {self.calendar_week}/{self.year} (Employee: {self.employee.first_name}, ID: {self.id}), Entries: {len(self.entries)}>"
 
@@ -129,7 +108,7 @@ class Workweek:
 
 class BreakTimeRule:
     """
-    Strategie zur Prüfung der Pausenzeit (Schweizer Arbeitszeitgesetz).
+    Strategie zur Prüfung der Pausenzeit. Es gilt fix eine 15-Minuten-Regel ohne Ausnahmen.
     Warum hier: Entkoppelt das Arbeitszeitgesetz von der Datenstruktur (TimeEntry).
     """
 

@@ -1,8 +1,6 @@
 # Arbeitszeit-Auswertungs Programm
 
-> 🚧 Replace the screenshot with one that shows your main screen.
-
-![UI Showcase](docs/ui-images/ui_showcase.png)
+![UI Showcase](Gruppe_06-Arbeitszeitrechner_2.0\docs\ui_showcase.png)
 
 ---
 
@@ -30,7 +28,7 @@ Das Problem ist, dass der Vorgesetzte ein File erhält in dem alle Mitarbeiter i
 
 ### Scenario
 
-Der User will eine Übersicht über die Stunden haben, indem ein er ein File importiert, welches die wöchentliche Stemplungen der Mitarbeiter beinhaltet. Schlussendlich soll er als Output im Browser , eine Übersicht erhalten in der aufgeführt ist:
+Der Admin will eine Übersicht über die Stunden haben, welches die wöchentliche Stemplungen der Mitarbeiter beinhaltet. Schlussendlich soll er als Output im Browser , eine Übersicht erhalten in der aufgeführt ist:
 - Nachname, Vorname, Pensum
 - Effektivstunden
 - Soll-Zeit
@@ -39,7 +37,16 @@ Der User will eine Übersicht über die Stunden haben, indem ein er ein File imp
 - Vertragsbedingungen eingehalten?
 - Begründung der Vertrags-Verletzung
 
-Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individuelle Mitarbeterauszüge nach Kalenderwoche anzuschauen.
+Der Admin soll eine Gesamtübersicht erhalten, aber auch die Option haben, individuelle Mitarbeterauszüge nach Kalenderwoche anzuschauen.
+
+Der Mitarbeiter (Employee) soll seine eigenen Arbeitszeiten digital erfassen und verwalten können. Als Output im Browser soll er eine persönliche Übersicht erhalten, in der aufgeführt ist:
+- Effektivstunden (Ist-Zeit) pro Woche
+- Individuelle Soll-Zeit (basierend auf dem Pensum)
+- Differenz-Zeit (Über- oder Minusstunden)
+- Einhaltung der Rahmenbedingungen (Pausen- und Maximalarbeitszeiten) inkl. Begründung bei Verstössen
+
+Der Mitarbeiter soll eine detaillierte Ansicht seiner Stundenauszüge pro Kalenderwoche haben und die Möglichkeit besitzen, Arbeitszeiten der aktuellen Woche anzupassen.
+
 ---
 
 ## User Stories
@@ -47,67 +54,72 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 ### 1. Worker: Login
 **Als Worker möchte ich, mich einloggen und meine Module sehen basierend auf meiner Berechtigung**
 
-**Inputs:** Login(Email,Password) 
-**Outputs:** none
+- **Inputs:** username (`str`), password (`str`)
+- **Outputs:** none
 
 ### 2. Worker: Stundeneintrag
 **Als Worker möchte ich, mich einloggen und meine Arbeitsstunden eintragen für eine Kalenderwoche**
 
-**Inputs:** ?list([entry])  
-**Outputs:** ?list([entry])  
+**Regeln:**
+- Keine Nachtschicht (nur Tagesarbeit).
+- Pro Tag maximal 4 Zeitstempel (Morgen-Start, Morgen-Ende, Nachmittag-Start, Nachmittag-Ende).
+- Pausen sind auf 15 Minuten festgelegt.
+
+- **Inputs:** entry_date (`date`), morning_start (`time`), morning_end (`time`), afternoon_start (`time | None`), afternoon_end (`time | None`)
+- **Outputs:** new entry (`TimeEntry`), rule violations (`list[Violation]`)
 
 ### 3. Worker: Stundenübersicht
-**Als Worker möchte ich, mich einloggen und meine individuelle Arbeitsstundenauszüge sehen pro Kalenderjahr und möchte eine detaillierten Auschnitt sehen (Soll-Ist Zeit, Diferenz usw.)**
+**Als Worker möchte ich, mich einloggen und meine individuelle Arbeitsstundenauszüge sortiert nach Kalenderwoche und möchte eine detaillierten Auschnitt sehen (Soll-Ist Zeit, Diferenz usw.)**
 
-**Inputs:** none  
-**Outputs:** list([entry]) "where UserID matches"
+- **Inputs:** year (`int`), calendar_week (`int`)
+- **Outputs:** weekly summary (`Workweek`), entries (`list[TimeEntry]`), rule violations (`list[Violation]`)
 
 ### 4. Worker: Stundenanpassung
 **Als Worker möchte ich, mich einloggen und meine Arbeitsstunden der jetzigen Kalenderwoche modifizieren**
 
-**Inputs:** ?list([entry])  
-**Outputs:** ?list([entry])
+- **Inputs:** entry_id (`str`), updated_times (`time`)
+- **Outputs:** updated entry (`TimeEntry`), updated violations (`list[Violation]`)
 
 ### 5. Worker: Logout
 **Als Worker möchte ich, mich ausloggen können.**
 
-**Inputs:** logout()
-**Outputs:** none
+- **Inputs:** none
+- **Outputs:** none
 
 ### 6. Admin: Login
 **Als Admin möchte ich, mich einloggen und meine Module sehen basierend auf meiner Berechtigung**
 
-**Inputs:** Login(Email,Password) 
-**Outputs:**
+- **Inputs:** username (`str`), password (`str`)
+- **Outputs:** none
 
 ### 7. Admin: Stundenübersicht
-**Als Admin möchte ich, eine Übersicht der Soll-Zeit, Differenz-Zeit,Pensums jedes einzelnen Mitarbeiters erhalten, der bereits Einträge erstellt hat.**
+**Als Admin möchte ich, eine Übersicht der Soll-Zeit, Differenz-Zeit, Pensums jedes einzelnen Mitarbeiters erhalten, der bereits Einträge erstellt hat.**
 
-**Inputs:** none  
-**Outputs:**  list([entry]) "All UserID"
+- **Inputs:** year (`int`), calendar_week (`int`)
+- **Outputs:** list of summaries (`list[dict]`) matching all users
 
 ### 8. Admin: View Violations Menu
 **Als Admin möchte ich, eine Angabe erhalten ob die vertraglichen Rahmenbedingungen eingehalten wurden und gegebenenfalls eine Angabe erhalten welche Rahmenbedingung verletzt wurde pro Mitarbeiter.**
 
-**Inputs:** none  
-**Outputs:** list([violations]) "All UserID"
+- **Inputs:** filter_params (`dict`)
+- **Outputs:** list of rule violations (`list[Violation]`) matching all users
 
 ### 9. Admin: User Managment Menu 
-**Als Admin möchte ich,neue Mitarbeiter erfassen oder entfernen.**
+**Als Admin möchte ich, neue Mitarbeiter erfassen oder entfernen.**
 
-**Inputs:** createUser(Name,Pensum,Email,Passwort)  
-**Outputs:** newUser
+- **Inputs:** first_name (`str`), last_name (`str`), email (`str`), password (`str`), role (`str`), employment_percentage (`float`)
+- **Outputs:** newly created user (`Employee | Admin`)
 
 ### 10. Admin: Logout
 **Als Admin möchte ich, mich ausloggen können.**
 
-**Inputs:** logout()
-**Outputs:** none
+- **Inputs:** none
+- **Outputs:** none
 ---
 
 ### Use cases
 
-![Use Case Diagramm](Use%20Case%20Diagramm.png)
+![Use Case Diagramm](Gruppe_06-Arbeitszeitrechner_2.0\docs\architecture-diagrams\Use%20Case%20Diagramm.png)
 
 ## Main Use Cases
 
@@ -158,7 +170,7 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 
 > 🚧 Insert your UML class diagram(s). Split into multiple diagrams if needed.
 
-![UML Class Diagram](docs/architecture-diagrams/uml_class_architecture.png)
+![UML Class Diagram](Gruppe_06-Arbeitszeitrechner_2.0\docs\architecture-diagrams\uml_class_architecture.png)
 
 **Layers / components:**
 - UI (Presentation Layer): Wir nutzen NiceGUI für das Frontend. Der Browser dient hier als reiner "Thin Client". Er zeigt die Daten nur an und schickt Eingaben ans Backend.
@@ -181,7 +193,7 @@ Der User soll ene Gesamtübersicht erhalten, aber auch die Option haben, individ
 
 ### 🗄️ Database and ORM
 
-![ER Diagram](Gruppe_06-Arbeitszeitrechner_2.0/docs/architecture-diagrams/ER_Diagram_.png)
+![ER Diagram](Gruppe_06-Arbeitszeitrechner_2.0\docs\architecture-diagrams\ER_Diagram_.png)
 
 **Entities**
 User: Represents a person using the app
@@ -233,7 +245,7 @@ In der Datei `src/ui/__init__.py` stellen wir sicher, dass nur korrekte Formate 
 Innerhalb der `TimeEntry` Klasse in `src/domain/time_tracking.py` findet die logische Prüfung statt. Hier wird unter anderem sichergestellt, dass Endzeiten niemals vor den Startzeiten liegen. Zudem verhindern wir Buchungen in der Zukunft und prüfen, ob Nachmittagsblöcke überschneidungsfrei zum Morgenblock eingetragen wurden.
 
 **Regelbasierte Validierung:**
-Durch spezielle Strategy Klassen wie `BreakTimeRule` oder `MaxDailyWorkRule` prüfen wir im Hintergrund automatisch, ob gesetzliche oder vertragliche Rahmenbedingungen verletzt wurden. Dies umfasst die Einhaltung von Mindestpausen sowie die Einhaltung der maximal zulässigen Tages- und Wochenarbeitszeit.
+Durch den Einsatz von Strategy-Klassen (z.B. `BreakTimeRule` oder `MaxDailyWorkRule`), welche durch unseren `TimeTrackingService` zentral ausgeführt werden, prüfen wir automatisiert vertragliche Rahmenbedingungen. Diese sind für unsere Domäne bewusst vereinfacht modelliert: Die tägliche Pause ist auf fix 15 Minuten definiert, zudem wird die maximale Tages- und Wochenarbeitszeit kontrolliert. Nachtschichten sind systematisch ausgeschlossen.
 
 
 ---
