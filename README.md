@@ -119,8 +119,7 @@ Der Mitarbeiter soll eine detaillierte Ansicht seiner Stundenauszüge pro Kalend
 
 ### Use cases
 
-![Use Case Diagramm](Gruppe_06-Arbeitszeitrechner_2.0\docs\architecture-diagrams\Use%20Case%20Diagramm.png)
-
+![Use Case Diagramm](Gruppe_06-Arbeitszeitrechner_2.0\docs\architecture-diagrams\Use Case Diagramm.png)
 ## Main Use Cases
 
 1. Arbeitszeiten eintragen
@@ -250,14 +249,20 @@ Durch den Einsatz von Strategy-Klassen (z.B. `BreakTimeRule` oder `MaxDailyWorkR
 
 ### 3. Database Management
 
-Für die Verwaltung der Daten nutzen wir SQLModel als modernem Object Relational Mapper (ORM). Die Definitionen befinden sich in `src/persistence/models.py`.
+Für die Verwaltung der Daten nutzen wir SQLModel als ORM. Die Datenbankmodelle befinden sich in `src/persistence/models.py`, die Konvertierung zwischen Domain-Objekten und Datenbankobjekten übernehmen die Mapper in `src/persistence/mappers/`.
 
 **Datenmodell und Relationen:**
-- User Modell: Speichert alle Informationen zu den Mitarbeitenden inklusive ihrer Rollen (Admin oder Worker) und des jeweiligen Beschäftigungsgrads für die Sollzeit Berechnung.
-- TimeEntry Modell: Dieser Teil bildet die täglichen Arbeitsstempel ab. Über den Fremdschlüssel `fk_user_id` ist jeder Eintrag fest mit einem Benutzer verknüpft. Die Zeiten werden zur besseren Berechenbarkeit als Float Werte gespeichert.
-- Violation Modell: Hier werden spezifische Regelverstösse dokumentiert. Dieses Modell ist über den Fremdschlüssel `fk_TimeEntry_id` direkt mit dem entsprechenden Arbeitstag verknüpft, an dem der Fehler aufgetreten ist.
+- `User` Modell: Speichert die Stammdaten der Benutzer mit den Feldern `pk_user_id`, `username`, `Vorname`, `Nachname`, `Email`, `Passwort`, `IsAAdmin` und `Pensum`.
+- `TimeEntry` Modell: Bildet einen Arbeitstag ab. Über `fk_user_id` ist jeder Eintrag einem Benutzer zugeordnet. Weitere Felder sind `Kalenderwoche`, `Jahr`, `Tag`, `MorgenBeginn`, `MorgenStop`, `NachmittagBeginn` und `NachmittagStop`.
+- `Violation` Modell: Speichert Regelverstösse mit `pk_violation_id`, `fk_TimeEntry_id`, `type`, `message` und `violation_date`.
 
-Durch den Einsatz von SQLModel können wir komplexe Abfragen und Verknüpfungen direkt in Python schreiben, was den Code wartbar und sicher gegen SQL Injektionen macht.
+**Wichtige Repository-Funktionen:**
+- `EmployeeRepository.save()` speichert einen Benutzer.
+- `EmployeeRepository.find_by_id()` und `find_by_email()` laden Benutzer wieder aus der Datenbank.
+- `TimeEntryRepository.save()` speichert einen Zeiteintrag zusammen mit Mitarbeiter-ID, Kalenderwoche und Jahr.
+- `TimeEntryRepository.find_by_date()` und `find_entries_for_week()` lesen Einträge gezielt wieder aus.
+
+Die Zeiten werden im Datenbankmodell als Float-Werte abgelegt und in den Mappern wieder in `time`-Objekte umgewandelt. Dadurch bleiben Berechnungen wie Sollzeit, Istzeit und Überstunden im Service und in der Domain nachvollziehbar und testbar.
 
 ---
 
@@ -285,7 +290,7 @@ Workspace root/
 └─ Gruppe_06-Arbeitszeitrechner_2.0/
    ├─ docs/
    │  └─ architecture-diagrams/
-   │     └─ ER_Diagram_.png
+   │  └─ MockUp's/
    ├─ src/
    │  ├─ data_access/
    │  │  └─ Database.py
@@ -302,11 +307,13 @@ Workspace root/
    │  │  ├─ mappers/
    │  │  │  ├─ __init__.py
    │  │  │  ├─ employee_mapper.py
-   │  │  │  └─ time_entry_mapper.py
+   │  │  │  ├─ time_entry_mapper.py
+   │  │  │  └─ violation_mapper.py
    │  │  └─ repositories/
    │  │     ├─ __init__.py
    │  │     ├─ employee_repository.py
-   │  │     └─ time_entry_repository.py
+   │  │     ├─ time_entry_repository.py
+   │  │     └─ violation_repository.py   
    │  ├─ ui/
    │  │  └─ __init__.py
    │  └─ main.py
@@ -545,12 +552,12 @@ $env:PYTHONPATH="."; python -m pytest tests/
 ---
 
 
-| Name            | Contribution                      |
-|-----------------|-----------------------------------|
-| Arti Rechi      | NiceGUI UI + documentation        |
-| Denis Meira     | Database & ORM + documentation    |
-| Mehmedali Abdiu | Business logic + documentation    |
-
+| Name            | Contribution                                                                                              |  
+|-----------------|-----------------------------------------------------------------------------------------------------------|
+| Arti Rechi      | NiceGUI UI + documentation                                                                                |
+| Denis Meira     | Database & ORM, GUI MockUp's, Creation of Presentation Slides + documentation                             |
+| Mehmedali Abdiu | Business logic, Strategy Pattern for Business Rules, UI Integration, Data Validation + documentation      |
+|-----------------|-----------------------------------------------------------------------------------------------------------|
 ---
 
 ## 🤝 Contributing
