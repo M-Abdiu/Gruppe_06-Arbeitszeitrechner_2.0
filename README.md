@@ -61,9 +61,9 @@ Der Mitarbeiter soll eine detaillierte Ansicht seiner Stundenauszüge pro Kalend
 **Als Worker möchte ich, mich einloggen und meine Arbeitsstunden eintragen für eine Kalenderwoche**
 
 **Regeln:**
-- Keine Nachtschicht (nur Tagesarbeit).
+- Keine Nachtschicht (nur Tagesarbeit, keine Arbeit bis zum nächsten Tag).
 - Pro Tag maximal 4 Zeitstempel (Morgen-Start, Morgen-Ende, Nachmittag-Start, Nachmittag-Ende).
-- Pausen sind auf 15 Minuten festgelegt.
+- Pausen sind auf mindestens 15 Minuten festgelegt.
 
 - **Inputs:** entry_date (`date`), morning_start (`time`), morning_end (`time`), afternoon_start (`time | None`), afternoon_end (`time | None`)
 - **Outputs:** new entry (`TimeEntry`), rule violations (`list[Violation]`)
